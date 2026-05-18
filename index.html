@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hub de Gestão | Rótulos & Etiquetas</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="chart.min.js"></script>
+</head>
+<body>
+
+  <!-- TELA DE LOGIN -->
+  <div id="login-screen" class="login-screen" style="display:none">
+    <div class="login-card">
+      <div class="login-logo">
+        <span class="login-logo-icon">⬡</span>
+        <div>
+          <div class="login-logo-name">RotulosPro</div>
+          <div class="login-logo-sub">Gestão Industrial · Hub Arte</div>
+        </div>
+      </div>
+      <h2 class="login-title">Acesse sua conta</h2>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email"
+               onkeydown="if(event.key==='Enter')document.getElementById('login-senha').focus()">
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter')Firebase.login()">
+      </div>
+      <div id="login-error" class="login-error" style="display:none">E-mail ou senha incorretos.</div>
+      <button class="btn btn-primary login-btn" id="login-btn" onclick="Firebase.login()">Entrar</button>
+      <p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:12px">
+        Problemas de acesso? Fale com o administrador do sistema.
+      </p>
+    </div>
+  </div>
+
+  <div class="app" id="app-shell" style="display:none">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">⬡</span>
+          <div>
+            <span class="logo-name">RotulosPro</span>
+            <span class="logo-sub">Gestão Industrial</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-nav">
+        <span class="nav-label">Principal</span>
+        <a href="#" class="nav-item active" data-page="bi">
+          <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          <span>Dashboard BI</span>
+        </a>
+
+        <span class="nav-label">Operacional</span>
+        <a href="#" class="nav-item" data-page="faturamento">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+          <span>Faturamento</span>
+        </a>
+        <a href="#" class="nav-item" data-page="pcp">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+          <span>PCP</span>
+          <span class="nav-badge" id="badge-pcp">0</span>
+        </a>
+        <a href="#" class="nav-item" data-page="maquinas">
+          <svg viewBox="0 0 24 24"><path d="M22 9V7h-2V5c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2v-2h-2V9h2zm-4 10H4V5h14v14z"/><path d="M6 13h5v4H6zm6 0h2v4h-2zm-6-6h2v4H6zm3 0h5v4H9z"/></svg>
+          <span>Máquinas</span>
+        </a>
+        <a href="#" class="nav-item" data-page="orcamentos">
+          <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+          <span>Orçamentos</span>
+          <span class="nav-badge" id="badge-orcamentos">0</span>
+        </a>
+
+        <span class="nav-label">Configurações</span>
+        <a href="#" class="nav-item" id="navAdmin" onclick="event.preventDefault(); Auth.require(() => App.navigate('admin'))" style="display:none">
+          <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+          <span>Modelos de Produto</span>
+          <span id="navAdminLock" style="margin-left:auto;font-size:12px">🔒</span>
+        </a>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="sb-avatar">?</div>
+          <div style="flex:1;min-width:0">
+            <div class="user-name" id="sb-nome" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+            <div class="user-role" id="sb-funcao">—</div>
+          </div>
+          <button onclick="Firebase.logout()" title="Sair" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;padding:2px 4px;flex-shrink:0">⏻</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menuToggle">&#9776;</button>
+          <div>
+            <h1 class="page-title" id="pageTitle">Dashboard BI</h1>
+            <p class="page-subtitle" id="pageSubtitle">Visão geral do negócio</p>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="period-selector">
+            <label>Período:</label>
+            <select id="globalPeriod" onchange="App.changePeriod(this.value)">
+              <option value="mes">Este Mês (Mai/26)</option>
+              <option value="trimestre">Último Trimestre</option>
+              <option value="ano">Este Ano (2026)</option>
+              <option value="12meses">Últimos 12 Meses</option>
+            </select>
+          </div>
+          <div class="topbar-date">11/05/2026</div>
+        </div>
+      </header>
+
+      <!-- PAGE: BI DASHBOARD -->
+      <div id="page-bi" class="page active">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-blue">
+              <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-label">Faturamento Mês</span>
+              <span class="kpi-value" id="kpi-faturamento">R$ 0</span>
+              <span class="kpi-delta positive" id="kpi-faturamento-delta">+0%</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-green">
+              <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-label">Margem Bruta</span>
+              <span class="kpi-value" id="kpi-margem">0%</span>
+              <span class="kpi-delta" id="kpi-margem-delta">vs mês anterior</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-purple">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-label">Lucro Líquido</span>
+              <span class="kpi-value" id="kpi-lucro">R$ 0</span>
+              <span class="kpi-delta" id="kpi-lucro-delta">0% da receita</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-amber">
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-label">NFs Emitidas</span>
+              <span class="kpi-value" id="kpi-nfs">0</span>
+              <span class="kpi-delta" id="kpi-nfs-delta">ticket médio R$ 0</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-purple">
+              <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-label">Ticket Médio Orc.</span>
+              <span class="kpi-value" id="kpi-orc-ticket">R$ 0</span>
+              <span class="kpi-delta" id="kpi-orc-ticket-delta">por orçamento</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card large">
+            <div class="chart-header">
+              <h3>Faturamento vs Lucro — Últimos 12 Meses</h3>
+            </div>
+            <div class="chart-body">
+              <canvas id="chartFaturamento"></canvas>
+            </div>
+          </div>
+          <div class="chart-card small">
+            <div class="chart-header">
+              <h3>Vendas por Canal</h3>
+            </div>
+            <div class="chart-body">
+              <canvas id="chartCanal"></canvas>
+            </div>
+            <div class="canal-legend" id="canalLegend"></div>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card medium">
+            <div class="chart-header">
+              <h3>Performance por Vendedor — Canal Externo</h3>
+            </div>
+            <div class="chart-body">
+              <canvas id="chartVendedores"></canvas>
+            </div>
+          </div>
+          <div class="chart-card medium">
+            <div class="chart-header">
+              <h3>Top Produtos por Faturamento</h3>
+            </div>
+            <div class="chart-body chart-body-table">
+              <table class="mini-table" id="topProdutosTable"></table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: FATURAMENTO -->
+      <div id="page-faturamento" class="page">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-blue">
+              <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-label">Total Faturado</span>
+              <span class="kpi-value" id="fat-total">R$ 0</span>
+              <span class="kpi-delta positive" id="fat-count">0 notas</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-green">
+              <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-label">Ticket Médio</span>
+              <span class="kpi-value" id="fat-ticket">R$ 0</span>
+              <span class="kpi-delta" id="fat-ticket-info">por nota fiscal</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-purple">
+              <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-label">Canal Externo</span>
+              <span class="kpi-value" id="fat-externo">R$ 0</span>
+              <span class="kpi-delta" id="fat-externo-pct">0% do total</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-amber">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-label">Canal Interno</span>
+              <span class="kpi-value" id="fat-interno">R$ 0</span>
+              <span class="kpi-delta" id="fat-interno-pct">0% do total</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="toolbar-filters">
+            <input type="text" placeholder="Buscar cliente, NF..." id="fatSearch" oninput="Faturamento.filter()" class="search-input">
+            <select id="fatCanal" onchange="Faturamento.filter()">
+              <option value="">Todos os Canais</option>
+              <option value="Interno">Canal Interno</option>
+              <option value="Externo">Canal Externo</option>
+            </select>
+            <select id="fatStatus" onchange="Faturamento.filter()">
+              <option value="">Todos os Status</option>
+              <option value="Emitida">Emitida</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="Faturamento.openModal()">+ Nova NF</button>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table" id="fatTable">
+            <thead>
+              <tr>
+                <th>Nº NF</th>
+                <th>Cliente</th>
+                <th>Data</th>
+                <th>Canal</th>
+                <th>Vendedor</th>
+                <th>Valor</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="fatTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAGE: PCP -->
+      <div id="page-pcp" class="page">
+        <div class="kpi-grid four">
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-amber"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Aguardando</span>
+              <span class="kpi-value" id="pcp-aguardando">0</span>
+              <span class="kpi-delta">ordens de produção</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-blue"><svg viewBox="0 0 24 24"><path d="M22 9V7h-2V5c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2v-2h-2V9h2z"/></svg></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Em Produção</span>
+              <span class="kpi-value" id="pcp-producao">0</span>
+              <span class="kpi-delta">ordens ativas</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-green"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Prontos</span>
+              <span class="kpi-value" id="pcp-prontos">0</span>
+              <span class="kpi-delta">aguardando faturamento</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-red"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Atrasadas</span>
+              <span class="kpi-value" id="pcp-atrasadas">0</span>
+              <span class="kpi-delta">fora do prazo</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="toolbar-filters">
+            <input type="text" placeholder="Buscar OP, cliente, produto..." id="pcpSearch" oninput="PCP.filter()" class="search-input">
+            <select id="pcpStatus" onchange="PCP.filter()">
+              <option value="">Todos os Status</option>
+              <option value="Aguardando">Aguardando</option>
+              <option value="Em Produção">Em Produção</option>
+              <option value="Pronto">Pronto</option>
+              <option value="Entregue">Entregue</option>
+            </select>
+            <select id="pcpMaquina" onchange="PCP.filter()">
+              <option value="">Todas as Máquinas</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="PCP.openModal()">+ Nova OP</button>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nº OP</th>
+                <th>Cliente</th>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Entrada</th>
+                <th>Previsão</th>
+                <th>Máquina</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="pcpTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAGE: MÁQUINAS -->
+      <div id="page-maquinas" class="page">
+        <div class="machine-overview" id="machineOverview"></div>
+
+        <div class="section-title">Programação Semanal</div>
+        <div class="table-card">
+          <table class="data-table schedule-table" id="scheduleTable">
+            <thead id="scheduleHeader"></thead>
+            <tbody id="scheduleBody"></tbody>
+          </table>
+        </div>
+
+        <div class="section-title" style="margin-top:24px">Fila de Produção por Máquina</div>
+        <div class="machine-queue-grid" id="machineQueues"></div>
+      </div>
+
+      <!-- PAGE: ORÇAMENTOS -->
+      <div id="page-orcamentos" class="page">
+
+        <!-- KPIs DO MÓDULO (4 cards) -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-blue"><svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Em Aberto</span>
+              <span class="kpi-value" id="orc-em-aberto">0</span>
+              <span class="kpi-delta" id="orc-em-aberto-val">R$ 0</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-green"><svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Taxa de Conversão</span>
+              <span class="kpi-value" id="orc-conversao">0%</span>
+              <span class="kpi-delta" id="orc-conversao-info">fechados / total</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-amber"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Pend. Resposta</span>
+              <span class="kpi-value" id="orc-pendentes">0</span>
+              <span class="kpi-delta" id="orc-pendentes-val">em negociação</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-green"><svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Margem Média</span>
+              <span class="kpi-value" id="orc-margem-media">0%</span>
+              <span class="kpi-delta" id="orc-margem-media-info">ponderada por valor</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRÁFICOS BI -->
+        <div class="charts-row">
+          <div class="chart-card medium">
+            <div class="chart-header"><h3>Orçamentos por Vendedor</h3></div>
+            <div class="chart-body"><canvas id="chartOrcVendedor"></canvas></div>
+          </div>
+          <div class="chart-card small">
+            <div class="chart-header"><h3>Por Canal</h3></div>
+            <div class="chart-body"><canvas id="chartOrcCanal"></canvas></div>
+            <div class="canal-legend" id="orcCanalLegend"></div>
+          </div>
+          <div class="chart-card medium">
+            <div class="chart-header"><h3>Gerados vs Fechados (mensal)</h3></div>
+            <div class="chart-body"><canvas id="chartOrcConversao"></canvas></div>
+          </div>
+        </div>
+
+        <!-- TOOLBAR -->
+        <div class="toolbar">
+          <div class="view-toggle-group">
+            <button class="view-toggle-btn active" id="btnKanban" onclick="Orcamentos.setView('kanban')">&#9646;&#9646; Kanban</button>
+            <button class="view-toggle-btn" id="btnLista" onclick="Orcamentos.setView('lista')">&#9776; Lista</button>
+          </div>
+          <div class="toolbar-filters">
+            <input type="text" placeholder="Buscar cliente, produto..." id="orcSearch" oninput="Orcamentos.filter()" class="search-input">
+            <select id="orcFilterVendedor" onchange="Orcamentos.filter()">
+              <option value="">Todos os Vendedores</option>
+              <option value="Carlos Silva">Carlos Silva</option>
+              <option value="Ana Costa">Ana Costa</option>
+              <option value="Roberto Lima">Roberto Lima</option>
+              <option value="Mariana Santos">Mariana Santos</option>
+              <option value="Canal Interno">Canal Interno</option>
+            </select>
+            <select id="orcFilterCanal" onchange="Orcamentos.filter()">
+              <option value="">Todos os Canais</option>
+              <option value="Interno">Canal Interno</option>
+              <option value="Externo">Canal Externo</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="QuoteBuilder.open()">+ Novo Orçamento</button>
+        </div>
+
+        <!-- WRAPPER DE SCROLL HORIZONTAL DO KANBAN -->
+        <div class="kanban-scroll-outer">
+          <div id="orcKanban" class="kanban-board"></div>
+        </div>
+
+        <!-- LISTA -->
+        <div id="orcLista" style="display:none;">
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Nº ORC</th><th>Cliente</th><th>Produto</th><th>Qtd</th>
+                  <th>Valor</th><th>Margem</th><th>Responsável</th><th>Validade</th><th>Status</th><th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="orcTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: ADMIN -->
+      <div id="page-admin" class="page">
+
+        <!-- Cabeçalho -->
+        <div class="admin-page-header">
+          <div>
+            <h2 style="font-size:18px;font-weight:700;color:#0f172a">Configurações</h2>
+            <p style="font-size:12px;color:#64748b;margin-top:2px">Gerencie usuários e modelos de produto do sistema</p>
+          </div>
+          <button class="btn btn-secondary" id="adminLogoutBtn" style="display:none" onclick="Auth.logout()">🔓 Sair do Admin</button>
+        </div>
+
+        <!-- Abas -->
+        <div class="admin-tabs">
+          <button class="admin-tab active" id="adminTabUsuarios" onclick="AdminPage.setTab('usuarios')">👥 Usuários</button>
+          <button class="admin-tab" id="adminTabModelos" onclick="AdminPage.setTab('modelos')">📦 Modelos de Produto</button>
+        </div>
+
+        <!-- ABA: USUÁRIOS -->
+        <div id="admin-tab-usuarios">
+          <div class="admin-section-bar">
+            <span id="admin-users-count" style="font-size:13px;color:#64748b"></span>
+            <button class="btn btn-primary" onclick="UserAdmin.openNew()">+ Novo Usuário</button>
+          </div>
+          <div id="admin-users-list"></div>
+        </div>
+
+        <!-- ABA: MODELOS -->
+        <div id="admin-tab-modelos" style="display:none">
+          <div class="admin-section-bar">
+            <span style="font-size:13px;color:#64748b">Modelos disponíveis para criação de orçamentos</span>
+            <button class="btn btn-primary" onclick="ModelAdmin.openNewModel()">+ Novo Modelo</button>
+          </div>
+          <div id="admin-models-list"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: USUÁRIO -->
+  <div class="modal-overlay" id="modalUserForm">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <h2 id="userFormTitle">Novo Usuário</h2>
+        <button class="modal-close" onclick="closeModal('modalUserForm')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Nome completo <span class="obrig">*</span></label>
+            <input type="text" id="uf-nome" placeholder="Nome do usuário">
+          </div>
+          <div class="form-group full">
+            <label>E-mail <span class="obrig">*</span></label>
+            <input type="email" id="uf-email" placeholder="usuario@empresa.com">
+          </div>
+          <div class="form-group full">
+            <label>Função <span class="obrig">*</span></label>
+            <select id="uf-funcao">
+              <option value="">— Selecione a função —</option>
+              <optgroup label="Diretoria &amp; Gestão">
+                <option>Diretoria</option>
+                <option>Gerente Comercial</option>
+                <option>Gerente de Produção</option>
+                <option>Supervisor de Produção</option>
+                <option>Supervisor de Estoque</option>
+              </optgroup>
+              <optgroup label="Comercial">
+                <option>Faturamento/Fiscal</option>
+                <option>Financeiro</option>
+                <option>Comercial Interno - Backoffice</option>
+                <option>Comercial Interno - SDR</option>
+                <option>Comercial Interno - Executivo de Vendas</option>
+                <option>Comercial Interno - Executivo de Contas</option>
+              </optgroup>
+              <optgroup label="Produção">
+                <option>Arte Final</option>
+                <option>PCP</option>
+                <option>Manutenção</option>
+                <option>Operador</option>
+                <option>Auxiliar de Impressão</option>
+                <option>Impressor</option>
+              </optgroup>
+              <optgroup label="Logística &amp; Estoque">
+                <option>Expedição</option>
+                <option>Estoque</option>
+                <option>Estoque Papel</option>
+                <option>Compras</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-group" id="uf-senha-group">
+            <label>Senha <span class="obrig" id="uf-senha-obrig">*</span></label>
+            <input type="password" id="uf-senha" placeholder="Mínimo 6 caracteres">
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:8px;padding-top:22px">
+            <input type="checkbox" id="uf-ativo" checked style="width:16px;height:16px;accent-color:#2563eb">
+            <label for="uf-ativo" style="margin:0;font-weight:500;cursor:pointer">Usuário ativo</label>
+          </div>
+        </div>
+
+        <!-- Permissões de acesso -->
+        <div class="perm-section">
+          <div class="perm-section-title">
+            <span>🔐 Permissões de Acesso</span>
+            <div style="display:flex;gap:8px">
+              <button type="button" class="perm-all-btn" onclick="UserAdmin.setAllPerms(true)">Habilitar todos</button>
+              <button type="button" class="perm-all-btn" onclick="UserAdmin.setAllPerms(false)">Remover todos</button>
+            </div>
+          </div>
+          <div class="perm-grid">
+            <div class="perm-item">
+              <span class="perm-icon">📊</span>
+              <span class="perm-label">Dashboard BI</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="perm-bi" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="perm-item">
+              <span class="perm-icon">💰</span>
+              <span class="perm-label">Faturamento</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="perm-faturamento" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="perm-item">
+              <span class="perm-icon">✅</span>
+              <span class="perm-label">PCP</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="perm-pcp" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="perm-item">
+              <span class="perm-icon">⚙️</span>
+              <span class="perm-label">Máquinas</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="perm-maquinas" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="perm-item">
+              <span class="perm-icon">📄</span>
+              <span class="perm-label">Orçamentos</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="perm-orcamentos" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="perm-item">
+              <span class="perm-icon">🔒</span>
+              <span class="perm-label">Configurações</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="perm-admin">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalUserForm')">Cancelar</button>
+        <button class="btn btn-primary" onclick="UserAdmin.save()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVA NF -->
+  <div class="modal-overlay" id="modalFaturamento">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalFatTitle">Nova Nota Fiscal</h2>
+        <button class="modal-close" onclick="closeModal('modalFaturamento')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Número da NF</label>
+            <input type="text" id="fat-nf-num" placeholder="NF-001234">
+          </div>
+          <div class="form-group">
+            <label>Data de Emissão</label>
+            <input type="date" id="fat-nf-data">
+          </div>
+          <div class="form-group full">
+            <label>Cliente</label>
+            <input type="text" id="fat-nf-cliente" placeholder="Razão Social do cliente">
+          </div>
+          <div class="form-group">
+            <label>Canal de Venda</label>
+            <select id="fat-nf-canal">
+              <option value="Interno">Canal Interno</option>
+              <option value="Externo">Canal Externo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Vendedor</label>
+            <select id="fat-nf-vendedor">
+              <option value="—">— (Canal Interno)</option>
+              <option value="Carlos Silva">Carlos Silva</option>
+              <option value="Ana Costa">Ana Costa</option>
+              <option value="Roberto Lima">Roberto Lima</option>
+              <option value="Mariana Santos">Mariana Santos</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Valor (R$)</label>
+            <input type="number" id="fat-nf-valor" placeholder="0,00" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="fat-nf-status">
+              <option value="Emitida">Emitida</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalFaturamento')">Cancelar</button>
+        <button class="btn btn-primary" onclick="Faturamento.save()">Salvar NF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVA OP -->
+  <div class="modal-overlay" id="modalPCP">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Nova Ordem de Produção</h2>
+        <button class="modal-close" onclick="closeModal('modalPCP')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Número da OP</label>
+            <input type="text" id="pcp-op-num" placeholder="OP-2026-0001">
+          </div>
+          <div class="form-group">
+            <label>Data de Entrada</label>
+            <input type="date" id="pcp-op-entrada">
+          </div>
+          <div class="form-group full">
+            <label>Cliente</label>
+            <input type="text" id="pcp-op-cliente" placeholder="Nome do cliente">
+          </div>
+          <div class="form-group full">
+            <label>Produto / Descrição</label>
+            <input type="text" id="pcp-op-produto" placeholder="Ex: Rótulo Adesivo BOPP 100x70mm">
+          </div>
+          <div class="form-group">
+            <label>Quantidade</label>
+            <input type="number" id="pcp-op-qtd" placeholder="50000">
+          </div>
+          <div class="form-group">
+            <label>Previsão de Entrega</label>
+            <input type="date" id="pcp-op-previsao">
+          </div>
+          <div class="form-group">
+            <label>Máquina</label>
+            <select id="pcp-op-maquina">
+              <option value="Flexo 1">Flexográfica 1</option>
+              <option value="Flexo 2">Flexográfica 2</option>
+              <option value="Digital">Impressora Digital</option>
+              <option value="Plotter">Plotter de Corte</option>
+              <option value="Laminadora">Laminadora</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="pcp-op-status">
+              <option value="Aguardando">Aguardando</option>
+              <option value="Em Produção">Em Produção</option>
+              <option value="Pronto">Pronto</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalPCP')">Cancelar</button>
+        <button class="btn btn-primary" onclick="PCP.save()">Salvar OP</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ORÇAMENTO -->
+  <div class="modal-overlay" id="modalOrcamento">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2 id="modalOrcTitle">Novo Orçamento</h2>
+        <button class="modal-close" onclick="closeModal('modalOrcamento')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Número do Orçamento</label>
+            <input type="text" id="orc-num" placeholder="ORC-2026-0001">
+          </div>
+          <div class="form-group">
+            <label>Data de Criação</label>
+            <input type="date" id="orc-data">
+          </div>
+          <div class="form-group full">
+            <label>Cliente</label>
+            <input type="text" id="orc-cliente" placeholder="Razão Social do cliente">
+          </div>
+          <div class="form-group full">
+            <label>Produto / Descrição</label>
+            <input type="text" id="orc-produto" placeholder="Ex: Etiqueta Térmica 50x30mm — especificar material, acabamento">
+          </div>
+          <div class="form-group">
+            <label>Quantidade</label>
+            <input type="number" id="orc-qtd" placeholder="100000" oninput="Orcamentos.calcular()">
+          </div>
+          <div class="form-group">
+            <label>Custo Unitário (R$)</label>
+            <input type="number" id="orc-custo" placeholder="0.0125" step="0.0001" oninput="Orcamentos.calcular()">
+          </div>
+          <div class="form-group">
+            <label>Preço Unitário (R$)</label>
+            <input type="number" id="orc-preco" placeholder="0.0200" step="0.0001" oninput="Orcamentos.calcular()">
+          </div>
+          <div class="form-group">
+            <label>Validade do Orçamento</label>
+            <input type="date" id="orc-validade">
+          </div>
+          <div class="form-group">
+            <label>Canal de Venda</label>
+            <select id="orc-canal">
+              <option value="Externo">Canal Externo</option>
+              <option value="Interno">Canal Interno</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Responsável / Vendedor</label>
+            <select id="orc-responsavel">
+              <option value="Canal Interno">Canal Interno</option>
+              <option value="Carlos Silva">Carlos Silva</option>
+              <option value="Ana Costa">Ana Costa</option>
+              <option value="Roberto Lima">Roberto Lima</option>
+              <option value="Mariana Santos">Mariana Santos</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status no Kanban</label>
+            <select id="orc-status">
+              <option value="Gerado">Gerado</option>
+              <option value="Revisão">Para Revisão</option>
+              <option value="Em Negociação">Em Negociação</option>
+              <option value="Fechado">Fechado</option>
+              <option value="Perdido">Perdido</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label>Observações</label>
+            <textarea id="orc-obs" rows="2" placeholder="Condições especiais, prazo de entrega, especificações técnicas..."></textarea>
+          </div>
+        </div>
+        <div class="calc-result">
+          <div class="calc-item"><span>Valor Total</span><strong id="calc-total">R$ 0,00</strong></div>
+          <div class="calc-item"><span>Custo Total</span><strong id="calc-custo">R$ 0,00</strong></div>
+          <div class="calc-item highlight"><span>Margem Bruta</span><strong id="calc-margem">0%</strong></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalOrcamento')">Cancelar</button>
+        <button class="btn btn-primary" onclick="Orcamentos.save()">Salvar Orçamento</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MODELO FORM -->
+  <div class="modal-overlay" id="modalModelForm">
+    <div class="modal" style="max-width:480px">
+      <div class="modal-header">
+        <h2 id="modelFormTitle">Novo Modelo</h2>
+        <button class="modal-close" onclick="closeModal('modalModelForm')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Nome do Modelo <span class="obrig">*</span></label>
+            <input type="text" id="mf-nome" placeholder="Ex: Rótulo Adesivo">
+          </div>
+          <div class="form-group">
+            <label>Categoria</label>
+            <input type="text" id="mf-categoria" placeholder="Ex: Rótulos">
+          </div>
+          <div class="form-group">
+            <label>Ativo</label>
+            <div style="display:flex;align-items:center;gap:8px;padding-top:6px">
+              <input type="checkbox" id="mf-ativo" checked style="width:16px;height:16px;cursor:pointer">
+              <span style="font-size:13px;color:#374151">Modelo ativo</span>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Descrição</label>
+            <textarea id="mf-descricao" rows="2" placeholder="Descreva brevemente este modelo..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalModelForm')">Cancelar</button>
+        <button class="btn btn-primary" onclick="ModelAdmin.saveModel()">Salvar Modelo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: FIELD FORM -->
+  <div class="modal-overlay" id="modalFieldForm">
+    <div class="modal" style="max-width:440px">
+      <div class="modal-header">
+        <h2>Adicionar Campo</h2>
+        <button class="modal-close" onclick="closeModal('modalFieldForm')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Label do Campo <span class="obrig">*</span></label>
+            <input type="text" id="ff-label" placeholder="Ex: Material (Substrato)">
+          </div>
+          <div class="form-group">
+            <label>Tipo</label>
+            <select id="ff-tipo" onchange="document.getElementById('ff-opcoes-group').style.display=this.value==='select'?'flex':'none'">
+              <option value="text">Texto</option>
+              <option value="number">Número</option>
+              <option value="select">Seleção (opções)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Obrigatório</label>
+            <div style="display:flex;align-items:center;gap:8px;padding-top:6px">
+              <input type="checkbox" id="ff-obrig" style="width:16px;height:16px;cursor:pointer">
+              <span style="font-size:13px;color:#374151">Campo obrigatório</span>
+            </div>
+          </div>
+          <div class="form-group full" id="ff-opcoes-group" style="display:none">
+            <label>Opções (uma por linha)</label>
+            <textarea id="ff-opcoes" rows="4" placeholder="Opção 1&#10;Opção 2&#10;Opção 3"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalFieldForm')">Cancelar</button>
+        <button class="btn btn-primary" onclick="ModelAdmin.saveField()">Adicionar Campo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: QUOTE BUILDER WIZARD -->
+  <div class="modal-overlay" id="modalQuoteBuilder">
+    <div class="modal modal-wizard">
+      <div class="modal-header" style="padding-bottom:16px;border-bottom:1px solid #e2e8f0">
+        <h2>Novo Orçamento</h2>
+        <button class="modal-close" onclick="closeModal('modalQuoteBuilder')">&times;</button>
+      </div>
+
+      <!-- Steps bar -->
+      <div class="wizard-steps-bar">
+        <div class="wz-step" id="wz-step-1">
+          <div class="wz-step-circle">1</div>
+          <div class="wz-step-label">Identificação</div>
+        </div>
+        <div class="wz-connector"></div>
+        <div class="wz-step" id="wz-step-2">
+          <div class="wz-step-circle">2</div>
+          <div class="wz-step-label">Especificações</div>
+        </div>
+        <div class="wz-connector"></div>
+        <div class="wz-step" id="wz-step-3">
+          <div class="wz-step-circle">3</div>
+          <div class="wz-step-label">Quantidades</div>
+        </div>
+        <div class="wz-connector"></div>
+        <div class="wz-step" id="wz-step-4">
+          <div class="wz-step-circle">4</div>
+          <div class="wz-step-label">Comercial</div>
+        </div>
+      </div>
+
+      <!-- Wizard body -->
+      <div class="wizard-body" id="qb-step-content"></div>
+
+      <!-- Footer nav -->
+      <div class="wizard-footer">
+        <button class="btn btn-secondary" id="qb-btn-prev" style="display:none" onclick="QuoteBuilder.prev()">&#8592; Anterior</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-secondary" onclick="closeModal('modalQuoteBuilder')" style="margin-right:8px">Cancelar</button>
+        <button class="btn btn-primary" id="qb-btn-next" onclick="QuoteBuilder.next()">Próximo &#8594;</button>
+        <button class="btn btn-primary" id="qb-btn-save" style="display:none" onclick="QuoteBuilder.save()">&#10003; Salvar Orçamento</button>
+        <button class="btn btn-pdf" id="qb-btn-pdf" style="display:none" onclick="QuoteBuilder.gerarPDF()">&#128438; Gerar PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
