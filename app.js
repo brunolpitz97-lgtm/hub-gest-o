@@ -3,120 +3,18 @@
    Versão 1.0 — Maio 2026
 =================================================== */
 
-// ===== DADOS MOCK =====
+// ===== DADOS =====
 const DB = {
-  faturamento_mensal: [
-    { mes: 'Jun/25', valor: 285000, custos: 178000, despesas: 38000 },
-    { mes: 'Jul/25', valor: 312000, custos: 194000, despesas: 41000 },
-    { mes: 'Ago/25', valor: 298000, custos: 186000, despesas: 39000 },
-    { mes: 'Set/25', valor: 342000, custos: 210000, despesas: 44000 },
-    { mes: 'Out/25', valor: 378000, custos: 230000, despesas: 48000 },
-    { mes: 'Nov/25', valor: 395000, custos: 240000, despesas: 50000 },
-    { mes: 'Dez/25', valor: 421000, custos: 255000, despesas: 52000 },
-    { mes: 'Jan/26', valor: 287000, custos: 181000, despesas: 38000 },
-    { mes: 'Fev/26', valor: 316000, custos: 198000, despesas: 42000 },
-    { mes: 'Mar/26', valor: 359000, custos: 220000, despesas: 47000 },
-    { mes: 'Abr/26', valor: 383000, custos: 234000, despesas: 50000 },
-    { mes: 'Mai/26', valor: 401000, custos: 245000, despesas: 52000 },
-  ],
-
-  canais: { interno: 145000, externo: 256000 },
-
-  vendedores: [
-    { nome: 'Carlos Silva',    faturamento: 87500,  meta: 90000,  margem: 32.5 },
-    { nome: 'Ana Costa',       faturamento: 72300,  meta: 75000,  margem: 34.1 },
-    { nome: 'Roberto Lima',    faturamento: 58200,  meta: 65000,  margem: 29.8 },
-    { nome: 'Mariana Santos',  faturamento: 38000,  meta: 40000,  margem: 35.2 },
-  ],
-
-  top_produtos: [
-    { produto: 'Rótulo Adesivo BOPP',    faturamento: 112400, pct: 28 },
-    { produto: 'Etiqueta Térmica D.',    faturamento: 89600,  pct: 22 },
-    { produto: 'Rótulo Colorido 4c',     faturamento: 72300,  pct: 18 },
-    { produto: 'Etiqueta Tecido/Nylon',  faturamento: 52000,  pct: 13 },
-    { produto: 'Fita Impressa',          faturamento: 38700,  pct: 10 },
-    { produto: 'Outros',                 faturamento: 36000,  pct: 9  },
-  ],
-
-  notas: [
-    { id:'NF-001234', cliente:'Bebidas Ipê Ltda',       data:'2026-05-10', canal:'Externo', vendedor:'Carlos Silva',   valor:12580, status:'Emitida'   },
-    { id:'NF-001233', cliente:'Laticínios Vale Verde',  data:'2026-05-09', canal:'Interno', vendedor:'—',             valor:8920,  status:'Emitida'   },
-    { id:'NF-001232', cliente:'Frigorífico Nobre',      data:'2026-05-09', canal:'Externo', vendedor:'Ana Costa',     valor:21340, status:'Emitida'   },
-    { id:'NF-001231', cliente:'Cosméticos Bella',       data:'2026-05-08', canal:'Externo', vendedor:'Carlos Silva',  valor:6780,  status:'Emitida'   },
-    { id:'NF-001230', cliente:'Supermercado Familiar',  data:'2026-05-08', canal:'Interno', vendedor:'—',             valor:15200, status:'Emitida'   },
-    { id:'NF-001229', cliente:'Indústria Sabores',      data:'2026-05-07', canal:'Externo', vendedor:'Roberto Lima',  valor:9450,  status:'Emitida'   },
-    { id:'NF-001228', cliente:'Doces & Cia',            data:'2026-05-07', canal:'Externo', vendedor:'Mariana Santos',valor:4320,  status:'Emitida'   },
-    { id:'NF-001227', cliente:'Farmácia Central',       data:'2026-05-06', canal:'Interno', vendedor:'—',             valor:7680,  status:'Emitida'   },
-    { id:'NF-001226', cliente:'Vinícola Montanha',      data:'2026-05-05', canal:'Externo', vendedor:'Ana Costa',     valor:18750, status:'Emitida'   },
-    { id:'NF-001225', cliente:'Molhos Del Rey',         data:'2026-05-02', canal:'Externo', vendedor:'Carlos Silva',  valor:11200, status:'Cancelada' },
-  ],
-
-  ordens: [
-    { op:'OP-2026-0458', cliente:'Laticínios Vale Verde', produto:'Rótulo Adesivo BOPP 100x70mm',    qtd:50000,  entrada:'2026-05-08', previsao:'2026-05-15', maquina:'Flexo 1',  status:'Em Produção', prioridade:'Alta'   },
-    { op:'OP-2026-0459', cliente:'Bebidas Ipê Ltda',      produto:'Rótulo Colorido 4c 80x60mm',      qtd:100000, entrada:'2026-05-08', previsao:'2026-05-16', maquina:'Flexo 2',  status:'Em Produção', prioridade:'Normal' },
-    { op:'OP-2026-0460', cliente:'Cosméticos Bella',      produto:'Etiqueta BOPP Transparente',      qtd:30000,  entrada:'2026-05-09', previsao:'2026-05-17', maquina:'Flexo 1',  status:'Aguardando',  prioridade:'Normal' },
-    { op:'OP-2026-0461', cliente:'Frigorífico Nobre',     produto:'Etiqueta Térmica 50x30mm',        qtd:500000, entrada:'2026-05-09', previsao:'2026-05-18', maquina:'Flexo 2',  status:'Aguardando',  prioridade:'Alta'   },
-    { op:'OP-2026-0462', cliente:'Supermercado Familiar', produto:'Fita Impressa 30mm',              qtd:20000,  entrada:'2026-05-09', previsao:'2026-05-14', maquina:'Digital',  status:'Em Produção', prioridade:'Alta'   },
-    { op:'OP-2026-0455', cliente:'Molhos Del Rey',        produto:'Rótulo Frente+Verso 90x130mm',    qtd:80000,  entrada:'2026-05-06', previsao:'2026-05-13', maquina:'Laminadora',status:'Pronto',     prioridade:'Normal' },
-    { op:'OP-2026-0453', cliente:'Vinícola Montanha',     produto:'Rótulo Vinho BOPP Metálico',      qtd:25000,  entrada:'2026-05-05', previsao:'2026-05-10', maquina:'Flexo 1',  status:'Pronto',      prioridade:'Normal' },
-    { op:'OP-2026-0451', cliente:'Farmácia Central',      produto:'Etiqueta Adesiva 40x25mm',        qtd:200000, entrada:'2026-05-02', previsao:'2026-05-08', maquina:'Digital',  status:'Entregue',    prioridade:'Normal' },
-  ],
-
-  maquinas: [
-    { id:1, nome:'Flexográfica 1', tipo:'Impressão Flexo',   status:'Rodando',    op_atual:'OP-2026-0458', eficiencia:87 },
-    { id:2, nome:'Flexográfica 2', tipo:'Impressão Flexo',   status:'Setup',      op_atual:'OP-2026-0461', eficiencia:0  },
-    { id:3, nome:'Impressora Digital', tipo:'Impressão Digital', status:'Rodando',op_atual:'OP-2026-0462', eficiencia:92 },
-    { id:4, nome:'Plotter de Corte',   tipo:'Corte/Acabamento', status:'Disponível', op_atual:null,       eficiencia:0  },
-    { id:5, nome:'Laminadora',         tipo:'Acabamento',       status:'Rodando',  op_atual:'OP-2026-0455', eficiencia:78 },
-    { id:6, nome:'Rebobinadeira',      tipo:'Acabamento',       status:'Manutenção', op_atual:null,       eficiencia:0  },
-  ],
-
-  usuarios: [
-    { id:'USR-001', nome:'Bruno Pitz',       email:'brunolpitz97@gmail.com',      funcao:'Diretoria',                               ativo:true,  criado:'2026-01-01', permissoes:{ bi:true,  faturamento:true,  pcp:true,  maquinas:true,  orcamentos:true,  admin:true  } },
-    { id:'USR-002', nome:'Carlos Silva',     email:'carlos.silva@rotulosp.com',   funcao:'Comercial Interno - Executivo de Vendas', ativo:true,  criado:'2026-01-15', permissoes:{ bi:true,  faturamento:false, pcp:false, maquinas:false, orcamentos:true,  admin:false } },
-    { id:'USR-003', nome:'Ana Costa',        email:'ana.costa@rotulosp.com',      funcao:'Comercial Interno - Executivo de Vendas', ativo:true,  criado:'2026-01-15', permissoes:{ bi:true,  faturamento:false, pcp:false, maquinas:false, orcamentos:true,  admin:false } },
-    { id:'USR-004', nome:'Roberto Lima',     email:'roberto.lima@rotulosp.com',   funcao:'Gerente Comercial',                       ativo:true,  criado:'2026-02-01', permissoes:{ bi:true,  faturamento:true,  pcp:false, maquinas:false, orcamentos:true,  admin:false } },
-    { id:'USR-005', nome:'Mariana Santos',   email:'mariana.santos@rotulosp.com', funcao:'Comercial Interno - Backoffice',          ativo:true,  criado:'2026-02-01', permissoes:{ bi:true,  faturamento:false, pcp:false, maquinas:false, orcamentos:true,  admin:false } },
-  ],
-
-  modelos_produto: [
-    { id:'MOD-001', nome:'Rótulo Adesivo', categoria:'Rótulos', descricao:'Rótulos em papel ou BOPP com adesivo', ativo:true, campos_extras:[
-      { id:'ce1-1', label:'Material (Substrato)', tipo:'select', opcoes:['BOPP Transparente','BOPP Branco','Papel Couchê','Papel Kraft','PP Metalizado'], obrigatorio:true },
-      { id:'ce1-2', label:'Tipo de Adesivo', tipo:'select', opcoes:['Permanente','Removível','Ultra-removível','Congelado (-25°C)'], obrigatorio:true },
-      { id:'ce1-3', label:'Cores de Impressão', tipo:'select', opcoes:['1 cor','2 cores','3 cores','4 cores','CMYK','CMYK+spot'], obrigatorio:true },
-      { id:'ce1-4', label:'Sentido de Bobina', tipo:'select', opcoes:['S1','S2','S3','S4','S5','S6','S7','S8'], obrigatorio:false },
-    ]},
-    { id:'MOD-002', nome:'Etiqueta Térmica', categoria:'Etiquetas', descricao:'Etiquetas para impressão térmica direta ou transferência', ativo:true, campos_extras:[
-      { id:'ce2-1', label:'Tipo Térmico', tipo:'select', opcoes:['Térmica Direta (TD)','Transferência Térmica (TT)'], obrigatorio:true },
-      { id:'ce2-2', label:'Temperatura de Armazenagem', tipo:'select', opcoes:['Ambiente','Refrigerado (0-8°C)','Congelado (-25°C)'], obrigatorio:false },
-      { id:'ce2-3', label:'Resistência a Químicos', tipo:'select', opcoes:['Padrão','Alta Resistência'], obrigatorio:false },
-    ]},
-    { id:'MOD-003', nome:'Etiqueta Tecido/Nylon', categoria:'Etiquetas', descricao:'Etiquetas em tecido, nylon ou cetim', ativo:true, campos_extras:[
-      { id:'ce3-1', label:'Material', tipo:'select', opcoes:['Nylon','Cetim','Algodão','Poliéster'], obrigatorio:true },
-      { id:'ce3-2', label:'Tipo de Impressão', tipo:'select', opcoes:['Transfer Digital','Flexo','Silk','Sublimação'], obrigatorio:true },
-      { id:'ce3-3', label:'Acabamento das Bordas', tipo:'select', opcoes:['Cortada','Dobrada Simples','Dobrada Dupla'], obrigatorio:false },
-    ]},
-    { id:'MOD-004', nome:'Fita Impressa', categoria:'Fitas', descricao:'Fitas de embalagem impressas com logotipo', ativo:true, campos_extras:[
-      { id:'ce4-1', label:'Material da Fita', tipo:'select', opcoes:['BOPP','PVC','Kraft','Tecido'], obrigatorio:true },
-      { id:'ce4-2', label:'Cores de Impressão', tipo:'select', opcoes:['1 cor','2 cores','3 cores'], obrigatorio:true },
-      { id:'ce4-3', label:'Comprimento do Rolo (m)', tipo:'number', obrigatorio:true },
-    ]},
-  ],
-
-  orcamentos: [
-    { id:'ORC-2026-0089', cliente:'Frigorífico Nobre',      produto:'Etiqueta Térmica 50x30mm BOPP', qtd:500000, custo_unit:0.0098, preco_unit:0.0175, criado:'2026-05-09', validade:'2026-05-24', status:'Em Negociação', responsavel:'Ana Costa',      canal:'Externo' },
-    { id:'ORC-2026-0088', cliente:'Vinícola Montanha',      produto:'Rótulo Vinho BOPP Metálico',    qtd:50000,  custo_unit:0.0412, preco_unit:0.0680, criado:'2026-05-08', validade:'2026-05-23', status:'Revisão',       responsavel:'Carlos Silva',  canal:'Externo' },
-    { id:'ORC-2026-0087', cliente:'Cosméticos Bella',       produto:'Etiqueta BOPP Transparente',    qtd:100000, custo_unit:0.0235, preco_unit:0.0390, criado:'2026-05-07', validade:'2026-05-22', status:'Fechado',       responsavel:'Roberto Lima',  canal:'Externo' },
-    { id:'ORC-2026-0086', cliente:'Supermercado Familiar',  produto:'Fita Impressa 30mm Natural',    qtd:30000,  custo_unit:0.0620, preco_unit:0.0980, criado:'2026-05-06', validade:'2026-05-20', status:'Perdido',       responsavel:'Canal Interno', canal:'Interno' },
-    { id:'ORC-2026-0085', cliente:'Molhos Del Rey',         produto:'Rótulo Frente+Verso 90x130mm',  qtd:80000,  custo_unit:0.0318, preco_unit:0.0540, criado:'2026-05-05', validade:'2026-05-20', status:'Fechado',       responsavel:'Carlos Silva',  canal:'Externo' },
-    { id:'ORC-2026-0084', cliente:'Farmácia Central',       produto:'Etiqueta Adesiva 40x25mm',      qtd:200000, custo_unit:0.0145, preco_unit:0.0240, criado:'2026-05-03', validade:'2026-05-18', status:'Gerado',        responsavel:'Mariana Santos',canal:'Externo' },
-    { id:'ORC-2026-0083', cliente:'Indústria Sabores',      produto:'Rótulo Colorido 4c 90x60mm',    qtd:150000, custo_unit:0.0280, preco_unit:0.0460, criado:'2026-05-02', validade:'2026-05-17', status:'Em Negociação', responsavel:'Ana Costa',      canal:'Externo' },
-    { id:'ORC-2026-0082', cliente:'Doces & Cia',            produto:'Etiqueta Kraft 60x40mm',        qtd:75000,  custo_unit:0.0195, preco_unit:0.0310, criado:'2026-05-01', validade:'2026-05-16', status:'Fechado',       responsavel:'Roberto Lima',  canal:'Externo' },
-    { id:'ORC-2026-0081', cliente:'Laticínios Vale Verde',  produto:'Rótulo BOPP Fosco 100x70mm',    qtd:60000,  custo_unit:0.0342, preco_unit:0.0580, criado:'2026-04-28', validade:'2026-05-13', status:'Gerado',        responsavel:'Carlos Silva',  canal:'Externo' },
-    { id:'ORC-2026-0080', cliente:'Bebidas Ipê Ltda',       produto:'Rótulo Long Neck 90x130mm',     qtd:40000,  custo_unit:0.0485, preco_unit:0.0820, criado:'2026-04-25', validade:'2026-05-10', status:'Revisão',       responsavel:'Canal Interno', canal:'Interno' },
-    { id:'ORC-2026-0079', cliente:'Panificadora Ouro',      produto:'Etiqueta Térmica 40x25mm',      qtd:300000, custo_unit:0.0088, preco_unit:0.0155, criado:'2026-04-22', validade:'2026-05-07', status:'Perdido',       responsavel:'Mariana Santos',canal:'Externo' },
-    { id:'ORC-2026-0078', cliente:'Distribuidora ABC',      produto:'Rótulo Colorido BOPP 80x50mm',  qtd:120000, custo_unit:0.0265, preco_unit:0.0440, criado:'2026-04-20', validade:'2026-05-05', status:'Gerado',        responsavel:'Roberto Lima',  canal:'Externo' },
-  ],
+  faturamento_mensal: [],
+  canais: { interno: 0, externo: 0 },
+  vendedores: [],
+  top_produtos: [],
+  notas: [],
+  ordens: [],
+  maquinas: [],
+  usuarios: [],
+  modelos_produto: [],
+  orcamentos: [],
 };
 
 // ===== UTILITÁRIOS =====
@@ -154,9 +52,9 @@ function prioridadeBadge(p) {
 }
 
 // ===== DADOS SEMENTE (usados no primeiro acesso ou modo demo) =====
-const SEED_ORCAMENTOS = DB.orcamentos.slice();   // copia dos mocks
-const SEED_MODELOS    = DB.modelos_produto.slice();
-const SEED_USUARIOS   = DB.usuarios.slice();
+const SEED_ORCAMENTOS = [];
+const SEED_MODELOS    = [];
+const SEED_USUARIOS   = [];
 
 // Limpa DB — será preenchido pelo Firebase (ou seed em modo demo)
 DB.orcamentos      = [];
@@ -239,29 +137,30 @@ const App = {
 // ===== BI DASHBOARD =====
 const BI = {
   render() {
-    const ultimo = DB.faturamento_mensal[DB.faturamento_mensal.length - 1];
-    const anterior = DB.faturamento_mensal[DB.faturamento_mensal.length - 2];
+    const ultimo  = DB.faturamento_mensal.length > 0 ? DB.faturamento_mensal[DB.faturamento_mensal.length - 1] : null;
+    const anterior = DB.faturamento_mensal.length > 1 ? DB.faturamento_mensal[DB.faturamento_mensal.length - 2] : null;
 
-    const lucro = ultimo.valor - ultimo.custos - ultimo.despesas;
-    const margem = ((ultimo.valor - ultimo.custos) / ultimo.valor) * 100;
-    const lucroLiq = (lucro / ultimo.valor) * 100;
-    const deltaPct = ((ultimo.valor - anterior.valor) / anterior.valor * 100).toFixed(1);
+    const lucro    = ultimo ? ultimo.valor - ultimo.custos - ultimo.despesas : 0;
+    const margem   = ultimo && ultimo.valor ? ((ultimo.valor - ultimo.custos) / ultimo.valor) * 100 : 0;
+    const lucroLiq = ultimo && ultimo.valor ? (lucro / ultimo.valor) * 100 : 0;
+    const deltaPct = (ultimo && anterior) ? ((ultimo.valor - anterior.valor) / anterior.valor * 100).toFixed(1) : '0.0';
 
-    const totalNFs = DB.notas.filter(n => n.status === 'Emitida').length;
-    const ticketMedio = DB.notas.filter(n => n.status === 'Emitida').reduce((s,n) => s + n.valor, 0) / totalNFs;
+    const totalNFs    = DB.notas.filter(n => n.status === 'Emitida').length;
+    const somaEmitidas = DB.notas.filter(n => n.status === 'Emitida').reduce((s,n) => s + n.valor, 0);
+    const ticketMedio = totalNFs ? somaEmitidas / totalNFs : 0;
 
-    document.getElementById('kpi-faturamento').textContent = fmt.moeda(ultimo.valor);
-    document.getElementById('kpi-faturamento-delta').textContent = `${deltaPct > 0 ? '+' : ''}${deltaPct}% vs mês anterior`;
+    document.getElementById('kpi-faturamento').textContent = ultimo ? fmt.moeda(ultimo.valor) : 'R$ 0,00';
+    document.getElementById('kpi-faturamento-delta').textContent = anterior ? `${deltaPct > 0 ? '+' : ''}${deltaPct}% vs mês anterior` : 'Sem dados anteriores';
     document.getElementById('kpi-faturamento-delta').className = `kpi-delta ${deltaPct >= 0 ? 'positive' : 'negative'}`;
 
     document.getElementById('kpi-margem').textContent = fmt.pct(margem);
-    document.getElementById('kpi-margem-delta').textContent = `Custo: ${fmt.moeda(ultimo.custos)}`;
+    document.getElementById('kpi-margem-delta').textContent = ultimo ? `Custo: ${fmt.moeda(ultimo.custos)}` : 'Sem dados';
 
     document.getElementById('kpi-lucro').textContent = fmt.moeda(lucro);
     document.getElementById('kpi-lucro-delta').textContent = `${fmt.pct(lucroLiq)} da receita`;
 
     document.getElementById('kpi-nfs').textContent = totalNFs;
-    document.getElementById('kpi-nfs-delta').textContent = `ticket médio ${fmt.moeda(ticketMedio)}`;
+    document.getElementById('kpi-nfs-delta').textContent = totalNFs ? `ticket médio ${fmt.moeda(ticketMedio)}` : 'Nenhuma nota emitida';
 
     // Ticket médio de orçamentos
     const totalOrc = DB.orcamentos.length;
@@ -358,7 +257,7 @@ const BI = {
           ${c.label}
         </span>
         <span class="canal-legend-val">${fmt.moeda(c.val)}</span>
-        <span class="canal-legend-pct">${fmt.pct(c.val / total * 100)}</span>
+        <span class="canal-legend-pct">${total ? fmt.pct(c.val / total * 100) : '0,0%'}</span>
       </div>
     `).join('');
   },
@@ -401,6 +300,10 @@ const BI = {
 
   renderTopProdutos() {
     const t = document.getElementById('topProdutosTable');
+    if (!DB.top_produtos.length) {
+      t.innerHTML = '<tbody><tr><td colspan="4" style="text-align:center;padding:32px;color:#94a3b8">Sem dados</td></tr></tbody>';
+      return;
+    }
     t.innerHTML = `
       <thead>
         <tr>
@@ -446,9 +349,9 @@ const Faturamento = {
     document.getElementById('fat-count').textContent = `${emitidas.length} notas`;
     document.getElementById('fat-ticket').textContent = fmt.moeda(ticket);
     document.getElementById('fat-externo').textContent = fmt.moeda(externo);
-    document.getElementById('fat-externo-pct').textContent = `${fmt.pct(externo / total * 100)} do total`;
+    document.getElementById('fat-externo-pct').textContent = total ? `${fmt.pct(externo / total * 100)} do total` : '0,0% do total';
     document.getElementById('fat-interno').textContent = fmt.moeda(interno);
-    document.getElementById('fat-interno-pct').textContent = `${fmt.pct(interno / total * 100)} do total`;
+    document.getElementById('fat-interno-pct').textContent = total ? `${fmt.pct(interno / total * 100)} do total` : '0,0% do total';
 
     Faturamento.filter();
   },
@@ -614,6 +517,10 @@ const Maquinas = {
 
   renderCards() {
     const el = document.getElementById('machineOverview');
+    if (!DB.maquinas.length) {
+      el.innerHTML = '<p class="empty-state" style="padding:32px;color:#94a3b8;text-align:center">Nenhuma máquina cadastrada ainda.</p>';
+      return;
+    }
     el.innerHTML = DB.maquinas.map(m => {
       const statusClass = `status-${m.status.toLowerCase().replace(' ','')}`;
       const opAtual = DB.ordens.find(o => o.op === m.op_atual);
@@ -677,8 +584,13 @@ const Maquinas = {
       if (filas[o.maquina]) filas[o.maquina].push(o);
     });
 
-    document.getElementById('machineQueues').innerHTML = Object.entries(filas)
-      .filter(([, ops]) => ops.length > 0)
+    const filasComOPs = Object.entries(filas).filter(([, ops]) => ops.length > 0);
+    const el = document.getElementById('machineQueues');
+    if (!filasComOPs.length) {
+      el.innerHTML = '<p class="empty-state" style="padding:32px;color:#94a3b8;text-align:center">Nenhuma ordem em fila no momento.</p>';
+      return;
+    }
+    el.innerHTML = filasComOPs
       .map(([maq, ops]) => `
         <div class="queue-card">
           <div class="queue-card-title">
