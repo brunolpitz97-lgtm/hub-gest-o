@@ -802,6 +802,16 @@ svg { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
   grid-template-columns: repeat(3, 1fr);
   max-width: 1100px;
 }
+.menu-home-grid-5 {
+  grid-template-columns: repeat(6, 1fr);
+  max-width: 1100px;
+  gap: 20px;
+}
+.menu-home-grid-5 > :nth-child(1) { grid-column: 1 / 3; }
+.menu-home-grid-5 > :nth-child(2) { grid-column: 3 / 5; }
+.menu-home-grid-5 > :nth-child(3) { grid-column: 5 / 7; }
+.menu-home-grid-5 > :nth-child(4) { grid-column: 2 / 4; }
+.menu-home-grid-5 > :nth-child(5) { grid-column: 4 / 6; }
 .menu-home-grid-2 {
   grid-template-columns: repeat(2, 1fr);
   max-width: 700px;

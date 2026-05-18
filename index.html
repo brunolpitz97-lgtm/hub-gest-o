@@ -526,7 +526,7 @@
             <button onclick="Firebase.logout()" class="btn-logout-menu" title="Sair">⏻</button>
           </div>
         </div>
-        <div class="menu-home-grid">
+        <div class="menu-home-grid menu-home-grid-5">
           <div class="menu-card" onclick="App.navigate('bi')">
             <div class="menu-card-icon" style="background:#3b82f6">
               <svg viewBox="0 0 24 24" fill="white" width="40" height="40"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
@@ -550,10 +550,17 @@
           </div>
           <div class="menu-card" onclick="App.navigate('submenu-comercial')">
             <div class="menu-card-icon" style="background:#8b5cf6">
+              <svg viewBox="0 0 24 24" fill="white" width="40" height="40"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            </div>
+            <div class="menu-card-title">Comercial</div>
+            <div class="menu-card-sub">Funil de Vendas, Clientes e Orçamentos</div>
+          </div>
+          <div class="menu-card" onclick="App.navigate('submenu-financeiro')">
+            <div class="menu-card-icon" style="background:#0ea5e9">
               <svg viewBox="0 0 24 24" fill="white" width="40" height="40"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
             </div>
-            <div class="menu-card-title">Comercial Financeiro</div>
-            <div class="menu-card-sub">Funil de Vendas, Clientes e Orçamentos</div>
+            <div class="menu-card-title">Financeiro</div>
+            <div class="menu-card-sub">Resultados, margem e fluxo de caixa</div>
           </div>
         </div>
       </div>
@@ -593,7 +600,7 @@
       <div id="page-submenu-comercial" class="page menu-home">
         <div class="submenu-back">
           <button class="btn-back" onclick="App.navigate('menu')">← Menu Principal</button>
-          <h2 class="submenu-title">Comercial Financeiro</h2>
+          <h2 class="submenu-title">Comercial</h2>
         </div>
         <div class="menu-home-grid menu-home-grid-3">
           <div class="menu-card" onclick="App.navigate('funil-vendas')">
@@ -620,10 +627,41 @@
         </div>
       </div>
 
+      <!-- PAGE: SUBMENU FINANCEIRO -->
+      <div id="page-submenu-financeiro" class="page menu-home">
+        <div class="submenu-back">
+          <button class="btn-back" onclick="App.navigate('menu')">← Menu Principal</button>
+          <h2 class="submenu-title">Financeiro</h2>
+        </div>
+        <div class="menu-home-grid menu-home-grid-3">
+          <div class="menu-card" onclick="App.navigate('faturamento')">
+            <div class="menu-card-icon" style="background:#10b981">
+              <svg viewBox="0 0 24 24" fill="white" width="40" height="40"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            </div>
+            <div class="menu-card-title">Faturamento</div>
+            <div class="menu-card-sub">Notas fiscais e receita por período</div>
+          </div>
+          <div class="menu-card" onclick="App.navigate('bi')">
+            <div class="menu-card-icon" style="background:#3b82f6">
+              <svg viewBox="0 0 24 24" fill="white" width="40" height="40"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            </div>
+            <div class="menu-card-title">Dashboard BI</div>
+            <div class="menu-card-sub">Indicadores e resultados financeiros</div>
+          </div>
+          <div class="menu-card" style="opacity:.5;cursor:default">
+            <div class="menu-card-icon" style="background:#64748b">
+              <svg viewBox="0 0 24 24" fill="white" width="40" height="40"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 9c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm6 6H6v-1c0-2 4-3.1 6-3.1s6 1.1 6 3.1v1z"/></svg>
+            </div>
+            <div class="menu-card-title">Fluxo de Caixa</div>
+            <div class="menu-card-sub">Em desenvolvimento</div>
+          </div>
+        </div>
+      </div>
+
       <!-- PAGE: SUBMENU ORÇAMENTO -->
       <div id="page-submenu-orcamento" class="page menu-home">
         <div class="submenu-back">
-          <button class="btn-back" onclick="App.navigate('submenu-comercial')">← Comercial Financeiro</button>
+          <button class="btn-back" onclick="App.navigate('submenu-comercial')">← Comercial</button>
           <h2 class="submenu-title">Orçamento</h2>
         </div>
         <div class="menu-home-grid menu-home-grid-2">
