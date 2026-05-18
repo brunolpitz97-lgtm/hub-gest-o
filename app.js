@@ -1047,7 +1047,7 @@ const CAMPOS_COMUNS = [
   { id:'cc-altura',        label:'Altura mm',                     tipo:'number', obrigatorio:true  },
   { id:'cc-carreiras',     label:'Carreiras',                     tipo:'number', obrigatorio:true  },
   { id:'cc-espaco',        label:'Espaço entre carreiras mm',     tipo:'number', obrigatorio:false },
-  { id:'cc-faca',          label:'Formato da faca',               tipo:'text',   obrigatorio:false },
+  { id:'cc-faca',          label:'Formato da faca',               tipo:'select', opcoes:['Retangular','Quadrada','Oval','Especial','Redonda','Tag','Picote','Contínuo'], obrigatorio:false },
   { id:'cc-sugestao-faca', label:'Aceita sugestão de faca',       tipo:'select', opcoes:['Sim','Não'],                                              obrigatorio:true  },
   { id:'cc-verniz',        label:'Verniz',                        tipo:'select', opcoes:['Localizado','Total','Sem Verniz'],                        obrigatorio:true  },
   { id:'cc-laminacao',     label:'Laminação',                     tipo:'select', opcoes:['Brilho','Fosco','Sem Laminação'],                         obrigatorio:true  },
@@ -1072,7 +1072,6 @@ const CAMPOS_COMERCIAIS = [
   { id:'com-trib',     label:'Tributação',           tipo:'select',   opcoes:['Uso e Consumo','Benefício Têxtil 3%','Industrialização'], obrigatorio:true  },
   { id:'com-frete',    label:'Frete',                tipo:'select',   opcoes:['CIF','FOB'],                                              obrigatorio:true  },
   { id:'com-cond',     label:'Condição de pagamento', tipo:'text',     obrigatorio:true  },
-  { id:'com-custo',    label:'Custo unitário R$',    tipo:'number',   step:'0.0001',  obrigatorio:true  },
   { id:'com-preco',    label:'Preço unitário R$',    tipo:'number',   step:'0.0001',  obrigatorio:true  },
   { id:'com-obs',      label:'Observações',          tipo:'textarea', obrigatorio:false },
 ];
@@ -1742,13 +1741,6 @@ const QuoteBuilder = {
           <input type="text" id="qb-cliente" placeholder="Razão social do cliente" value="${QuoteBuilder.data.cliente || ''}">
         </div>
         <div class="form-group">
-          <label>Canal <span class="obrig">*</span></label>
-          <select id="qb-canal">
-            <option value="Externo"${QuoteBuilder.data.canal==='Externo'?' selected':''}>Canal Externo</option>
-            <option value="Interno"${QuoteBuilder.data.canal==='Interno'?' selected':''}>Canal Interno</option>
-          </select>
-        </div>
-        <div class="form-group">
           <label>Responsável <span class="obrig">*</span></label>
           <select id="qb-responsavel">
             <option value="Canal Interno">Canal Interno</option>
@@ -1883,12 +1875,11 @@ const QuoteBuilder = {
       <div class="form-grid">
         ${CAMPOS_COMERCIAIS.map(c => QuoteBuilder._campo(c, 'qbcom')).join('')}
       </div>
-      <div class="qb-section-title" style="margin-top:18px">Calculadora de Margem</div>
+      <div class="qb-section-title" style="margin-top:18px">Resumo do Orçamento</div>
       <div class="calc-result" id="qb-calc">
-        <div class="calc-item"><span>Valor Total</span><strong id="qb-calc-total">R$ 0,00</strong></div>
-        <div class="calc-item"><span>Custo Total</span><strong id="qb-calc-custo">R$ 0,00</strong></div>
-        <div class="calc-item highlight"><span>Margem Bruta</span><strong id="qb-calc-margem">0%</strong></div>
-        <div class="calc-item"><span>Avaliação</span><strong id="qb-calc-label" style="font-size:12px">—</strong></div>
+        <div class="calc-item highlight"><span>Valor Total</span><strong id="qb-calc-total">R$ 0,00</strong></div>
+        <div class="calc-item"><span>Preço Unitário</span><strong id="qb-calc-unit">R$ 0,0000</strong></div>
+        <div class="calc-item"><span>Quantidade</span><strong id="qb-calc-qtd">0</strong></div>
       </div>
     `;
     if (QuoteBuilder.data.com) {
@@ -1898,28 +1889,20 @@ const QuoteBuilder = {
       });
     }
     // wire up live calc
-    ['qbcom-com-custo','qbcom-com-preco'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('input', QuoteBuilder.calcPreco);
-    });
+    const elPreco = document.getElementById('qbcom-com-preco');
+    if (elPreco) elPreco.addEventListener('input', QuoteBuilder.calcPreco);
     QuoteBuilder.calcPreco();
   },
 
   calcPreco() {
-    const qtd1 = parseFloat((document.getElementById('qbq-cq-qtd1') || {}).value) || 0;
-    const custo = parseFloat((document.getElementById('qbcom-com-custo') || {}).value) || 0;
+    const qtd   = parseFloat((document.getElementById('qbq-cq-qtd1') || {}).value) || 0;
     const preco = parseFloat((document.getElementById('qbcom-com-preco') || {}).value) || 0;
-    const qtd = qtd1;
-    const margem = preco > 0 ? ((preco - custo) / preco * 100) : 0;
-    const mi = margemInfo(margem);
-    const total = document.getElementById('qb-calc-total');
-    const custoEl = document.getElementById('qb-calc-custo');
-    const margemEl = document.getElementById('qb-calc-margem');
-    const labelEl = document.getElementById('qb-calc-label');
-    if (total) total.textContent = fmt.moeda(qtd * preco);
-    if (custoEl) custoEl.textContent = fmt.moeda(qtd * custo);
-    if (margemEl) { margemEl.textContent = fmt.pct(margem); margemEl.style.color = mi.cor; }
-    if (labelEl) { labelEl.textContent = mi.label; labelEl.style.color = mi.cor; }
+    const totalEl = document.getElementById('qb-calc-total');
+    const unitEl  = document.getElementById('qb-calc-unit');
+    const qtdEl   = document.getElementById('qb-calc-qtd');
+    if (totalEl) totalEl.textContent = fmt.moeda(qtd * preco);
+    if (unitEl)  unitEl.textContent  = 'R$ ' + preco.toFixed(4).replace('.',',');
+    if (qtdEl)   qtdEl.textContent   = fmt.num(qtd);
   },
 
   _saveStep4Values() {
@@ -1937,10 +1920,8 @@ const QuoteBuilder = {
 
     // Cálculos financeiros
     const qtd1  = parseFloat((d.qtds || {})[CAMPOS_QTDS[0].id])    || 0;
-    const custo = parseFloat((d.com  || {})[CAMPOS_COMERCIAIS[3].id]) || 0;
-    const preco = parseFloat((d.com  || {})[CAMPOS_COMERCIAIS[4].id]) || 0;
-    const margem = preco > 0 ? ((preco - custo) / preco * 100) : 0;
-    const mi     = margemInfo(margem);
+    const preco = parseFloat((d.com  || {})[CAMPOS_COMERCIAIS[3].id]) || 0;
+    const valorTotal = qtd1 * preco;
     const fmtDate = s => s ? new Date(s + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
     const fmtNum  = n => Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
     const fmtMil  = n => Number(n).toLocaleString('pt-BR');
@@ -1969,7 +1950,7 @@ const QuoteBuilder = {
       return v ? `<tr><td>${c.label}</td><td>${v}</td></tr>` : '';
     }).join('');
 
-    const obs = (d.com || {})[CAMPOS_COMERCIAIS[5].id] || '';
+    const obs = (d.com || {})[CAMPOS_COMERCIAIS[4].id] || '';
 
     const html = `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -2007,7 +1988,6 @@ const QuoteBuilder = {
   .pi{text-align:center}
   .pi label{font-size:7.5pt;color:#64748b;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
   .pi .val{font-size:13pt;font-weight:700;color:#0f172a}
-  .pi.mg .val{color:${mi.cor}}
   .pi .sub{font-size:8pt;color:#94a3b8;margin-top:1px}
 
   /* Observações */
@@ -2020,8 +2000,8 @@ const QuoteBuilder = {
   /* Rodapé */
   .ftr{border-top:1px solid #e2e8f0;padding-top:10px;margin-top:20px;display:flex;justify-content:space-between;font-size:8pt;color:#94a3b8}
 
-  /* Avaliação de margem */
-  .mg-badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:8.5pt;font-weight:600;background:${mi.bg};color:${mi.cor};margin-top:4px}
+  /* Badge */
+  .mg-badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:8.5pt;font-weight:600;background:#e0eaf5;color:#0f4c81;margin-top:4px}
 
   @media print{
     body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -2050,7 +2030,7 @@ const QuoteBuilder = {
     <div class="ii"><label>Data</label><span>${fmtDate(d.data)}</span></div>
     <div class="ii"><label>Validade</label><span>${fmtDate(d.validade)}</span></div>
     <div class="ii"><label>Responsável</label><span>${d.responsavel || '—'}</span></div>
-    <div class="ii"><label>Canal</label><span>${d.canal || '—'}</span></div>
+    <div class="ii"><label>Status</label><span>${d.status || '—'}</span></div>
   </div>
 
   <!-- Cliente -->
@@ -2099,17 +2079,12 @@ const QuoteBuilder = {
       <div class="sub">${(d.cc||{})['cc-unidade'] || 'unid.'}</div>
     </div>
     <div class="pi">
-      <label>Custo Unitário</label>
-      <div class="val">R$&nbsp;${fmtNum(custo)}</div>
-    </div>
-    <div class="pi">
       <label>Preço Unitário</label>
       <div class="val">R$&nbsp;${fmtNum(preco)}</div>
     </div>
-    <div class="pi mg">
-      <label>Margem Bruta</label>
-      <div class="val">${margem.toFixed(1).replace('.',',')}%</div>
-      <div class="mg-badge">${mi.label}</div>
+    <div class="pi" style="grid-column:span 2">
+      <label>Valor Total</label>
+      <div class="val" style="font-size:16pt;color:#0f4c81">R$&nbsp;${Number(valorTotal).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
     </div>
   </div>
 
@@ -2166,7 +2141,6 @@ const QuoteBuilder = {
     if (QuoteBuilder.currentStep === 1) {
       QuoteBuilder.data.cliente    = (document.getElementById('qb-cliente') || {}).value || '';
       QuoteBuilder.data.data       = (document.getElementById('qb-data') || {}).value || '';
-      QuoteBuilder.data.canal      = (document.getElementById('qb-canal') || {}).value || 'Externo';
       QuoteBuilder.data.responsavel= (document.getElementById('qb-responsavel') || {}).value || '';
       QuoteBuilder.data.validade   = (document.getElementById('qb-validade') || {}).value || '';
       QuoteBuilder.data.status     = (document.getElementById('qb-status') || {}).value || 'Gerado';
@@ -2209,23 +2183,21 @@ const QuoteBuilder = {
   save() {
     QuoteBuilder._saveStep4Values();
     const d = QuoteBuilder.data;
-    const qtd1 = parseFloat((d.qtds || {})[CAMPOS_QTDS[0].id]) || 0;
-    const custo = parseFloat((d.com || {})[CAMPOS_COMERCIAIS[3].id]) || 0;
-    const preco = parseFloat((d.com || {})[CAMPOS_COMERCIAIS[4].id]) || 0;
+    const qtd1  = parseFloat((d.qtds || {})[CAMPOS_QTDS[0].id]) || 0;
+    const preco = parseFloat((d.com  || {})[CAMPOS_COMERCIAIS[3].id]) || 0;
     const titulo = (d.cc || {})[CAMPOS_COMUNS[0].id] || d.cliente || 'Produto';
     const newOrc = {
       id:          d.num || `ORC-2026-0${String(DB.orcamentos.length + 90).padStart(3,'0')}`,
       cliente:     d.cliente || 'Cliente',
       produto:     titulo,
       qtd:         qtd1,
-      custo_unit:  custo,
       preco_unit:  preco,
+      valor_total: qtd1 * preco,
       criado:      d.data || new Date().toISOString().split('T')[0],
       validade:    d.validade || '',
       status:      d.status || 'Gerado',
-      canal:       d.canal || 'Externo',
       responsavel: d.responsavel || '',
-      obs:         (d.com || {})[CAMPOS_COMERCIAIS[5].id] || '',
+      obs:         (d.com || {})[CAMPOS_COMERCIAIS[4].id] || '',
       modelo_id:   QuoteBuilder.modeloSelecionado,
     };
     DB.orcamentos.unshift(newOrc);
