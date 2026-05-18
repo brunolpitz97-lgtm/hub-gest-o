@@ -119,10 +119,11 @@ const App = {
       'submenu-comercial':  ['Comercial', 'Selecione um módulo'],
       'submenu-financeiro': ['Financeiro', 'Selecione um módulo'],
       'submenu-orcamento':  ['Orçamento', 'Selecione um módulo'],
+      'submenu-crm':        ['CRM', 'Gestão de relacionamento com clientes'],
       'previsto-realizado': ['Previsto x Realizado', 'Acompanhamento de metas fabris'],
-      'funil-vendas':      ['Funil de Vendas', 'Pipeline e conversão comercial'],
-      'clientes':          ['Clientes', 'Cadastro e gestão de clientes'],
-      'ribbons':           ['Ribbons', 'Orçamentos para ribbons de impressão'],
+      'funil-vendas':       ['Funil de Vendas', 'Pipeline e conversão comercial'],
+      'clientes':           ['Clientes', 'Cadastro e gestão de clientes'],
+      'ribbons':            ['Ribbons', 'Orçamentos para ribbons de impressão'],
     };
     const [title, sub] = titles[page] || ['Hub de Gestão', ''];
     document.getElementById('pageTitle').textContent = title;
