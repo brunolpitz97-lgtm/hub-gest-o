@@ -757,7 +757,6 @@ svg { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
   background: #f1f5f9;
   min-height: 100vh;
   padding: 0;
-  display: flex !important;
   flex-direction: column;
 }
 .menu-home-header {
