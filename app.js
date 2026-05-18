@@ -94,11 +94,8 @@ const App = {
       document.getElementById('sidebar').classList.toggle('collapsed');
     });
     App.updateBadges();
-    // Navega para o primeiro módulo com permissão
-    const ordem = ['bi','faturamento','pcp','maquinas','orcamentos'];
-    const p = Firebase.currentPerms;
-    const inicio = ordem.find(m => p[m] !== false) || 'bi';
-    App.navigate(inicio);
+    // Navega para o menu principal
+    App.navigate('menu');
   },
 
   navigate(page) {
@@ -106,13 +103,25 @@ const App = {
     document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === `page-${page}`));
     App.currentPage = page;
 
+    const isMenuPage = page === 'menu' || page.startsWith('submenu-');
+    document.getElementById('sidebar').style.display = isMenuPage ? 'none' : '';
+    document.querySelector('.topbar').style.display = isMenuPage ? 'none' : '';
+    document.getElementById('app-shell').style.gridTemplateColumns = isMenuPage ? '1fr' : '';
+
     const titles = {
-      bi:          ['Dashboard BI', 'Visão geral do negócio'],
-      faturamento: ['Faturamento', 'Notas fiscais e receita por período'],
-      pcp:         ['PCP — Planejamento e Controle', 'Ordens de produção e status fabril'],
-      maquinas:    ['Programação de Máquinas', 'Capacidade, fila e agenda da produção'],
-      orcamentos:  ['Orçamentos', 'Criação, gestão e conversão de propostas'],
-      admin:       ['Modelos de Produto', 'Configure os modelos usados nos orçamentos'],
+      bi:                  ['Dashboard BI', 'Visão geral do negócio'],
+      faturamento:         ['Faturamento', 'Notas fiscais e receita por período'],
+      pcp:                 ['PCP — Planejamento e Controle', 'Ordens de produção e status fabril'],
+      maquinas:            ['Programação de Máquinas', 'Capacidade, fila e agenda da produção'],
+      orcamentos:          ['Orçamentos', 'Criação, gestão e conversão de propostas'],
+      admin:               ['Modelos de Produto', 'Configure os modelos usados nos orçamentos'],
+      'submenu-producao':  ['Produção', 'Selecione um módulo'],
+      'submenu-comercial': ['Comercial Financeiro', 'Selecione um módulo'],
+      'submenu-orcamento': ['Orçamento', 'Selecione um módulo'],
+      'previsto-realizado': ['Previsto x Realizado', 'Acompanhamento de metas fabris'],
+      'funil-vendas':      ['Funil de Vendas', 'Pipeline e conversão comercial'],
+      'clientes':          ['Clientes', 'Cadastro e gestão de clientes'],
+      'ribbons':           ['Ribbons', 'Orçamentos para ribbons de impressão'],
     };
     const [title, sub] = titles[page] || ['Hub de Gestão', ''];
     document.getElementById('pageTitle').textContent = title;
@@ -1306,6 +1315,8 @@ const Firebase = {
       if (nm) nm.textContent  = ud.nome  || ud.email || '—';
       if (fn) fn.textContent  = ud.funcao || '—';
     }
+    const menuNome = document.getElementById('menu-user-nome');
+    if (menuNome) menuNome.textContent = Firebase.currentUserData?.nome || '—';
   },
 };
 
