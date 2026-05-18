@@ -1208,45 +1208,58 @@ const Firebase = {
 
   async _onLogin(user) {
     Firebase.currentUser = user;
-    const db = firebase.firestore();
 
-    // Carrega dados do usuário
-    try {
-      const snap = await Firebase._withTimeout(
-        db.collection('usuarios').where('email','==', user.email).limit(1).get()
-      );
-      if (!snap.empty) {
-        Firebase.currentUserData = { _fid: snap.docs[0].id, ...snap.docs[0].data() };
-        Firebase.currentPerms    = Firebase.currentUserData.permissoes || {};
-      } else {
-        // Primeiro login — cria documento de usuário com permissão total (admin inicial)
-        const novoUser = {
-          id: 'USR-001', nome: user.email.split('@')[0], email: user.email,
-          funcao: 'Diretoria', ativo: true,
-          criado: new Date().toISOString().split('T')[0],
-          permissoes: { bi:true, faturamento:true, pcp:true, maquinas:true, orcamentos:true, admin:true },
-        };
-        const ref = await Firebase._withTimeout(db.collection('usuarios').add(novoUser));
-        novoUser._fid = ref.id;
-        Firebase.currentUserData = novoUser;
-        Firebase.currentPerms    = novoUser.permissoes;
-      }
-    } catch(e) {
-      console.error('Erro ao carregar usuário:', e);
-      Firebase.currentPerms    = { bi:true, faturamento:true, pcp:true, maquinas:true, orcamentos:true, admin:true };
-      Firebase.currentUserData = { nome: user.email.split('@')[0], funcao: 'Admin' };
-    }
+    // Entra imediatamente com dados demo — Firestore carrega em background
+    Firebase.currentPerms    = { bi:true, faturamento:true, pcp:true, maquinas:true, orcamentos:true, admin:true };
+    Firebase.currentUserData = { nome: user.email.split('@')[0], funcao: 'Admin' };
+    DB.orcamentos      = SEED_ORCAMENTOS.map(o => ({...o}));
+    DB.modelos_produto = SEED_MODELOS.map(m => ({...m}));
+    DB.usuarios        = SEED_USUARIOS.map(u => ({...u}));
 
-    // Carrega dados do Firestore
-    await Firebase.loadAll();
-
-    // Mostra app
+    // Mostra o app imediatamente (sem esperar Firestore)
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-shell').style.display    = 'flex';
     document.getElementById('app-shell').classList.add('visible');
     Firebase._updateSidebar();
     Auth._updateUI();
     App._start();
+
+    // Carrega dados reais do Firestore em background (não bloqueia a entrada)
+    Firebase._syncFirestore(user);
+  },
+
+  async _syncFirestore(user) {
+    const db = firebase.firestore();
+    try {
+      // Carrega perfil do usuário
+      const snap = await Firebase._withTimeout(
+        db.collection('usuarios').where('email','==', user.email).limit(1).get(), 8000
+      );
+      if (!snap.empty) {
+        Firebase.currentUserData = { _fid: snap.docs[0].id, ...snap.docs[0].data() };
+        Firebase.currentPerms    = Firebase.currentUserData.permissoes || Firebase.currentPerms;
+        Firebase._updateSidebar();
+        Auth._updateUI();
+      } else {
+        // Primeiro login — cria documento admin
+        const novoUser = {
+          id: 'USR-001', nome: user.email.split('@')[0], email: user.email,
+          funcao: 'Diretoria', ativo: true,
+          criado: new Date().toISOString().split('T')[0],
+          permissoes: { bi:true, faturamento:true, pcp:true, maquinas:true, orcamentos:true, admin:true },
+        };
+        try {
+          const ref = await Firebase._withTimeout(db.collection('usuarios').add(novoUser), 8000);
+          novoUser._fid = ref.id;
+          Firebase.currentUserData = novoUser;
+        } catch(_) { /* sem Firestore, mantém dados locais */ }
+      }
+
+      // Carrega dados das coleções
+      await Firebase.loadAll();
+    } catch(e) {
+      console.warn('Firestore indisponível — usando dados locais:', e.message);
+    }
   },
 
   _onLogout() {
