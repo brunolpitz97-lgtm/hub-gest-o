@@ -152,9 +152,9 @@ const BI = {
     const ultimo  = DB.faturamento_mensal.length > 0 ? DB.faturamento_mensal[DB.faturamento_mensal.length - 1] : null;
     const anterior = DB.faturamento_mensal.length > 1 ? DB.faturamento_mensal[DB.faturamento_mensal.length - 2] : null;
 
-    const lucro    = ultimo ? ultimo.valor - ultimo.custos - ultimo.despesas : 0;
-    const margem   = ultimo && ultimo.valor ? ((ultimo.valor - ultimo.custos) / ultimo.valor) * 100 : 0;
-    const lucroLiq = ultimo && ultimo.valor ? (lucro / ultimo.valor) * 100 : 0;
+    const lucro       = ultimo ? ultimo.valor - ultimo.custos - ultimo.despesas : 0;
+    const margem      = ultimo && ultimo.valor ? (lucro / ultimo.valor) * 100 : 0;  // Margem Líquida = (receita - custos - despesas) / receita
+    const lucroLiq    = margem;
     const deltaPct = (ultimo && anterior) ? ((ultimo.valor - anterior.valor) / anterior.valor * 100).toFixed(1) : '0.0';
 
     const totalNFs    = DB.notas.filter(n => n.status === 'Emitida').length;
@@ -173,6 +173,13 @@ const BI = {
 
     document.getElementById('kpi-nfs').textContent = totalNFs;
     document.getElementById('kpi-nfs-delta').textContent = totalNFs ? `ticket médio ${fmt.moeda(ticketMedio)}` : 'Nenhuma nota emitida';
+
+    // Positivação — clientes únicos com NF emitida no período
+    const positivacao = new Set(DB.notas.filter(n => n.status === 'Emitida').map(n => n.cliente)).size;
+    const elPos = document.getElementById('kpi-positivacao');
+    if (elPos) elPos.textContent = positivacao;
+    const elPosD = document.getElementById('kpi-positivacao-delta');
+    if (elPosD) elPosD.textContent = `cliente${positivacao !== 1 ? 's' : ''} ativos no mês`;
 
     // Ticket médio de orçamentos
     const totalOrc = DB.orcamentos.length;

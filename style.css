@@ -114,6 +114,7 @@ svg { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
 .kpi-purple { background: #ede9fe; color: #7c3aed; }
 .kpi-amber { background: #fef3c7; color: #d97706; }
 .kpi-red { background: #fee2e2; color: #dc2626; }
+.kpi-teal { background: #ccfbf1; color: #0f766e; }
 .kpi-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .kpi-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
 .kpi-value { font-size: 22px; font-weight: 700; color: #0f172a; white-space: nowrap; }
