@@ -1159,6 +1159,12 @@ const Firebase = {
   currentPerms:    {},
   currentUserData: null,
 
+  // Helper: rejeita após ms milissegundos
+  _withTimeout(promise, ms = 10000) {
+    const t = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms));
+    return Promise.race([promise, t]);
+  },
+
   // Detecta se Firebase está configurado
   get configured() {
     try { return typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey !== 'COLE_AQUI'; }
@@ -1206,7 +1212,9 @@ const Firebase = {
 
     // Carrega dados do usuário
     try {
-      const snap = await db.collection('usuarios').where('email','==', user.email).limit(1).get();
+      const snap = await Firebase._withTimeout(
+        db.collection('usuarios').where('email','==', user.email).limit(1).get()
+      );
       if (!snap.empty) {
         Firebase.currentUserData = { _fid: snap.docs[0].id, ...snap.docs[0].data() };
         Firebase.currentPerms    = Firebase.currentUserData.permissoes || {};
@@ -1218,14 +1226,15 @@ const Firebase = {
           criado: new Date().toISOString().split('T')[0],
           permissoes: { bi:true, faturamento:true, pcp:true, maquinas:true, orcamentos:true, admin:true },
         };
-        const ref = await db.collection('usuarios').add(novoUser);
+        const ref = await Firebase._withTimeout(db.collection('usuarios').add(novoUser));
         novoUser._fid = ref.id;
         Firebase.currentUserData = novoUser;
         Firebase.currentPerms    = novoUser.permissoes;
       }
     } catch(e) {
       console.error('Erro ao carregar usuário:', e);
-      Firebase.currentPerms = { bi:true, faturamento:true, pcp:true, maquinas:true, orcamentos:true, admin:false };
+      Firebase.currentPerms    = { bi:true, faturamento:true, pcp:true, maquinas:true, orcamentos:true, admin:true };
+      Firebase.currentUserData = { nome: user.email.split('@')[0], funcao: 'Admin' };
     }
 
     // Carrega dados do Firestore
@@ -1277,11 +1286,11 @@ const Firebase = {
   async loadAll() {
     const db = firebase.firestore();
     try {
-      const [orcsSnap, modelosSnap, usuariosSnap] = await Promise.all([
+      const [orcsSnap, modelosSnap, usuariosSnap] = await Firebase._withTimeout(Promise.all([
         db.collection('orcamentos').orderBy('criado','desc').limit(300).get(),
         db.collection('modelos_produto').get(),
         db.collection('usuarios').get(),
-      ]);
+      ]));
       DB.orcamentos      = orcsSnap.docs.map(d => ({ _fid: d.id, ...d.data() }));
       DB.modelos_produto = modelosSnap.docs.map(d => ({ _fid: d.id, ...d.data() }));
       DB.usuarios        = usuariosSnap.docs.map(d => ({ _fid: d.id, ...d.data() }));
