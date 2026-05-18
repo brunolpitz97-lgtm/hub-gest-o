@@ -650,16 +650,9 @@
           <button class="btn-back" onclick="App.navigate('menu')">← Menu Principal</button>
           <h2 class="submenu-title">Financeiro</h2>
         </div>
-        <div class="menu-home-grid menu-home-grid-3">
-          <div class="menu-card" onclick="App.navigate('faturamento')">
-            <div class="menu-card-icon" style="background:#10b981">
-              <svg viewBox="0 0 24 24" fill="white" width="40" height="40"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-            </div>
-            <div class="menu-card-title">Faturamento</div>
-            <div class="menu-card-sub">Notas fiscais e receita por período</div>
-          </div>
-          <div class="menu-card" onclick="App.navigate('bi')">
-            <div class="menu-card-icon" style="background:#3b82f6">
+        <div class="menu-home-grid menu-home-grid-2">
+          <div class="menu-card" onclick="App.navigate('bi-financeiro')">
+            <div class="menu-card-icon" style="background:#0ea5e9">
               <svg viewBox="0 0 24 24" fill="white" width="40" height="40"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
             </div>
             <div class="menu-card-title">Dashboard BI</div>
@@ -667,7 +660,7 @@
           </div>
           <div class="menu-card" style="opacity:.5;cursor:default">
             <div class="menu-card-icon" style="background:#64748b">
-              <svg viewBox="0 0 24 24" fill="white" width="40" height="40"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 9c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm6 6H6v-1c0-2 4-3.1 6-3.1s6 1.1 6 3.1v1z"/></svg>
+              <svg viewBox="0 0 24 24" fill="white" width="40" height="40"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
             </div>
             <div class="menu-card-title">Fluxo de Caixa</div>
             <div class="menu-card-sub">Em desenvolvimento</div>
@@ -736,6 +729,19 @@
           <h2>Ribbons</h2>
           <p>Este módulo está em desenvolvimento.</p>
           <button class="btn btn-primary" onclick="App.navigate('submenu-orcamento')">← Voltar</button>
+        </div>
+      </div>
+
+      <!-- PAGE: DASHBOARD BI FINANCEIRO (placeholder) -->
+      <div id="page-bi-financeiro" class="page">
+        <div class="page-back-bar">
+          <button class="btn-back" onclick="App.navigate('submenu-financeiro')">← Financeiro</button>
+        </div>
+        <div class="page-placeholder">
+          <div class="placeholder-icon">📊</div>
+          <h2>Dashboard BI — Financeiro</h2>
+          <p>Este dashboard está em desenvolvimento.<br>Aqui serão exibidos os indicadores financeiros detalhados.</p>
+          <button class="btn btn-primary" onclick="App.navigate('submenu-financeiro')">← Voltar ao Financeiro</button>
         </div>
       </div>
 

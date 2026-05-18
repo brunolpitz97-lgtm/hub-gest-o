@@ -124,6 +124,7 @@ const App = {
       'funil-vendas':       ['Funil de Vendas', 'Pipeline e conversão comercial'],
       'clientes':           ['Clientes', 'Cadastro e gestão de clientes'],
       'ribbons':            ['Ribbons', 'Orçamentos para ribbons de impressão'],
+      'bi-financeiro':      ['Dashboard BI — Financeiro', 'Indicadores e resultados financeiros'],
     };
     const [title, sub] = titles[page] || ['Hub de Gestão', ''];
     document.getElementById('pageTitle').textContent = title;
