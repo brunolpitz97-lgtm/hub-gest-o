@@ -103,7 +103,7 @@ const App = {
     document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === `page-${page}`));
     App.currentPage = page;
 
-    const isMenuPage = page === 'menu' || page.startsWith('submenu-');
+    const isMenuPage = page === 'menu' || page.startsWith('submenu-') || page === 'ribbons';
     document.getElementById('sidebar').style.display = isMenuPage ? 'none' : '';
     document.querySelector('.topbar').style.display = isMenuPage ? 'none' : '';
     document.getElementById('app-shell').style.gridTemplateColumns = isMenuPage ? '1fr' : '';

@@ -1,0 +1,2244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RibbonPrice — Sistema Comercial</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f5f7;
+  --bg2: #ffffff;
+  --bg3: #f0f1f3;
+  --bg4: #e4e6ea;
+  --border: #dde0e6;
+  --border2: #c8ccd4;
+  --text: #1a1d23;
+  --text2: #5a6070;
+  --text3: #9aa0ae;
+  --accent: #2563eb;
+  --accent2: #1d4ed8;
+  --accent-dim: rgba(37,99,235,0.10);
+  --accent-dim2: rgba(37,99,235,0.05);
+  --red: #dc2626;
+  --red-dim: rgba(220,38,38,0.08);
+  --green: #16a34a;
+  --green-dim: rgba(22,163,74,0.08);
+  --blue: #2563eb;
+  --blue-dim: rgba(37,99,235,0.08);
+  --amber: #d97706;
+  --amber-dim: rgba(217,119,6,0.08);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --font: 'DM Sans', sans-serif;
+  --mono: 'DM Mono', monospace;
+  --shadow: 0 1px 4px rgba(0,0,0,0.08), 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 24px rgba(0,0,0,0.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden}
+#login-screen::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(37,99,235,0.07) 0%,transparent 70%);top:-100px;right:-100px;pointer-events:none}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2.5rem;width:380px;position:relative;z-index:1;box-shadow:var(--shadow);animation:fadeUp 0.4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.login-logo{text-align:center;margin-bottom:2rem}
+.login-logo .brand{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--accent);letter-spacing:-0.5px}
+.login-logo .brand span{color:var(--text3)}
+.login-logo p{font-size:12px;color:var(--text3);margin-top:4px;letter-spacing:0.08em;text-transform:uppercase}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:11px;color:var(--text2);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px}
+.form-group input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-family:var(--font);font-size:14px;transition:border-color 0.2s;outline:none}
+.form-group input:focus{border-color:var(--accent)}
+.btn-primary{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:11px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:background 0.2s,transform 0.1s;letter-spacing:0.02em}
+.btn-primary:hover{background:var(--accent2)}
+.btn-primary:active{transform:scale(0.99)}
+.login-error{background:var(--red-dim);border:1px solid rgba(220,38,38,0.3);border-radius:var(--radius);padding:10px 14px;color:var(--red);font-size:13px;margin-bottom:1rem;display:none}
+/* APP */
+#app{display:none;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;box-shadow:var(--shadow)}
+.sidebar-logo{padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--border)}
+.sidebar-logo .brand{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--accent)}
+.sidebar-logo .brand span{color:var(--text3)}
+.sidebar-logo p{font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px}
+.nav-section{padding:1rem 0.75rem 0.5rem}
+.nav-section-label{font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;padding:0 0.5rem;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:13px;font-weight:400;transition:all 0.15s;user-select:none;position:relative}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--accent-dim);color:var(--accent);font-weight:500}
+.nav-item .nav-icon{font-size:16px;width:18px;text-align:center}
+.nav-item .lock-badge{margin-left:auto;font-size:10px;color:var(--text3)}
+.sidebar-bottom{margin-top:auto;border-top:1px solid var(--border);padding:1rem}
+.user-info{display:flex;align-items:center;gap:10px;margin-bottom:0.75rem}
+.user-avatar{width:32px;height:32px;background:var(--accent-dim);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--accent);font-family:var(--mono);flex-shrink:0}
+.user-name{font-size:13px;font-weight:500;color:var(--text)}
+.user-role{font-size:11px;color:var(--text3)}
+.btn-logout{width:100%;background:transparent;border:1px solid var(--border);border-radius:var(--radius);padding:7px;color:var(--text2);font-family:var(--font);font-size:12px;cursor:pointer;transition:all 0.15s}
+.btn-logout:hover{border-color:var(--red);color:var(--red)}
+.main{margin-left:220px;min-height:100vh;background:var(--bg)}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
+.topbar-title{font-size:15px;font-weight:500;color:var(--text)}
+.topbar-badge{font-size:11px;background:var(--accent-dim);color:var(--accent);padding:3px 10px;border-radius:20px;font-family:var(--mono)}
+.page{display:none;padding:1.5rem}
+.page.active{display:block;animation:fadeIn 0.25s ease}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.card-title{font-size:11px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1rem}
+.metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow)}
+.metric-card .m-label{font-size:11px;color:var(--text3);margin-bottom:6px}
+.metric-card .m-value{font-size:22px;font-weight:600;font-family:var(--mono);color:var(--text)}
+.metric-card .m-value.green{color:var(--green)}
+.metric-card .m-value.accent{color:var(--accent)}
+.metric-card .m-value.blue{color:var(--blue)}
+.form-grid{display:grid;gap:12px}
+.form-grid.cols2{grid-template-columns:1fr 1fr}
+.form-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.form-grid.cols4{grid-template-columns:repeat(4,1fr)}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;color:var(--text2);letter-spacing:0.05em;text-transform:uppercase}
+.field input,.field select,.field textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:border-color 0.15s;width:100%}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field select{cursor:pointer}
+.field select option{background:var(--bg2)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);border:1px solid var(--border);font-family:var(--font);font-size:13px;cursor:pointer;transition:all 0.15s;font-weight:500;color:var(--text2);background:var(--bg3);white-space:nowrap}
+.btn:hover{background:var(--bg4);color:var(--text);border-color:var(--border2)}
+.btn.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.btn.btn-accent:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn.btn-danger{color:var(--red);border-color:rgba(220,38,38,0.3);background:var(--red-dim)}
+.btn.btn-danger:hover{background:rgba(220,38,38,0.15)}
+.btn.btn-sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.btn-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--bg3);padding:9px 12px;text-align:left;font-size:11px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s}
+tbody tr:hover{background:var(--bg3)}
+tbody td{padding:9px 12px;color:var(--text);vertical-align:middle}
+tbody td.mono{font-family:var(--mono);font-size:12px}
+tbody td.muted{color:var(--text2)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.badge.green{background:var(--green-dim);color:var(--green)}
+.badge.red{background:var(--red-dim);color:var(--red)}
+.badge.accent{background:var(--accent-dim);color:var(--accent)}
+.badge.blue{background:var(--blue-dim);color:var(--blue)}
+.badge.amber{background:var(--amber-dim);color:var(--amber)}
+.result-panel{background:var(--bg2);border:1px solid var(--accent);border-radius:var(--radius-lg);padding:1.25rem;margin-top:1rem;box-shadow:var(--shadow)}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.result-row:last-child{border-bottom:none}
+.result-row .rn{color:var(--text2)}
+.result-row .rv{font-family:var(--mono);font-weight:500;color:var(--text)}
+.result-row.highlight .rv{color:var(--accent);font-size:16px}
+.result-row.highlight .rn{color:var(--text);font-weight:500}
+.search-bar{position:relative;max-width:280px}
+.search-bar input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px 8px 34px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;width:100%}
+.search-bar input:focus{border-color:var(--accent)}
+.search-bar::before{content:'⌕';position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:16px;pointer-events:none}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:1rem;flex-wrap:wrap}
+.perm-denied{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem;text-align:center;color:var(--text3)}
+.perm-denied .icon{font-size:48px;margin-bottom:1rem}
+.perm-denied h3{color:var(--text2);font-size:16px;margin-bottom:0.5rem}
+.perm-denied p{font-size:13px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);width:520px;max-width:95vw;max-height:85vh;overflow-y:auto;padding:1.5rem;box-shadow:var(--shadow-lg);animation:fadeUp 0.25s ease}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.modal-header h3{font-size:16px;font-weight:600}
+.modal-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:4px;line-height:1;transition:color 0.15s}
+.modal-close:hover{color:var(--text)}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:13px;z-index:9999;transform:translateY(80px);opacity:0;transition:all 0.3s ease;max-width:320px;box-shadow:var(--shadow)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:rgba(22,163,74,0.4);color:var(--green)}
+.toast.error{border-color:rgba(220,38,38,0.4);color:var(--red)}
+.dash-activity{font-size:13px}
+.activity-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0}
+.activity-text{color:var(--text2);flex:1}
+.activity-text strong{color:var(--text)}
+.activity-time{color:var(--text3);font-size:11px;font-family:var(--mono)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.tag-perm{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;margin:1px;background:var(--bg4);color:var(--text2);border:1px solid var(--border)}
+.tag-perm.on{background:var(--accent-dim);color:var(--accent);border-color:rgba(37,99,235,0.2)}
+.divider{height:1px;background:var(--border);margin:1rem 0}
+.inline-alert{padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-top:8px}
+.inline-alert.warn{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(217,119,6,0.2)}
+.inline-alert.info{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(37,99,235,0.2)}
+.inline-alert.ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(22,163,74,0.2)}
+/* CARRINHO */
+.cart-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center}
+.cart-btn-wrap{position:relative;display:inline-flex}
+.cart-item-row{display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+.cart-item-row:last-child{border-bottom:none}
+.cart-item-desc{flex:1}
+.cart-item-price{font-family:var(--mono);font-weight:600;color:var(--accent)}
+/* RESPONSIVO */
+@media(max-width:768px){
+  /* Layout base */
+  .sidebar{display:none!important}
+  .bottom-nav{display:block!important}
+  .main{margin-left:0!important;padding-bottom:80px}
+  .topbar{padding:0 .75rem;height:52px}
+  .topbar-title{font-size:13px}
+  .page{padding:.75rem}
+
+  /* Login */
+  .login-box{width:calc(100vw - 2rem);padding:1.5rem 1.25rem;margin:1rem}
+
+  /* Grids → 1 coluna */
+  .form-grid.cols2,.form-grid.cols3,.form-grid.cols4{grid-template-columns:1fr!important}
+  .metrics-grid{grid-template-columns:1fr 1fr!important}
+
+  /* Dashboard */
+  #dash-grid{display:block!important}
+  #dash-grid > .card{margin-bottom:.75rem}
+
+  /* ── MÓDULO CÁLCULO ── */
+  #calc-layout{
+    display:block!important;
+  }
+  #calc-result{margin-top:.75rem}
+  /* FOB/CIF → 1 coluna */
+  #r-precos-grid{grid-template-columns:1fr!important}
+  /* Comissão/margem/lucro → 2 colunas */
+  #r-cards-grid{grid-template-columns:1fr 1fr!important}
+  /* Valores em destaque menores */
+  #r-pv-fob,#r-pv-cif{font-size:22px!important}
+  #r-comissao,#r-margem,#r-lucro{font-size:16px!important}
+  /* Botões carrinho empilhados */
+  #r-add-cart > div{gap:8px}
+  #r-add-cart .btn{font-size:12px;padding:8px 10px}
+
+  /* Topbar carrinho */
+  .cart-btn-wrap .btn{padding:6px 10px;font-size:12px}
+
+  /* Impostos */
+  #impostos-grid{display:block!important}
+  #impostos-grid > .card{margin-bottom:.75rem}
+
+  /* Tabelas scroll */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:480px}
+
+  /* Toolbar */
+  .toolbar{flex-direction:column;align-items:stretch;gap:8px}
+  .btn-row{flex-wrap:wrap}
+  .btn-row .btn{flex:1;min-width:120px;justify-content:center}
+  .search-bar{max-width:100%}
+  .search-bar input{width:100%}
+
+  /* Modal → bottom sheet */
+  .modal{
+    width:100vw!important;
+    max-width:100vw!important;
+    border-radius:var(--radius-lg) var(--radius-lg) 0 0!important;
+    position:fixed!important;
+    bottom:0!important;
+    left:0!important;
+    right:0!important;
+    max-height:88vh!important;
+    margin:0!important;
+  }
+  .modal-overlay{align-items:flex-end!important}
+
+  /* Inputs maiores para evitar zoom iOS */
+  .field select,.field input,.field textarea{font-size:16px!important;padding:11px 12px!important}
+  input[type=number]{font-size:16px!important}
+
+  /* Target field */
+  #c-target{font-size:18px!important;padding:10px 12px!important}
+
+  /* Toast */
+  .toast{left:.75rem;right:.75rem;bottom:85px;max-width:calc(100vw - 1.5rem)}
+
+  /* Perm denied */
+  .perm-denied{padding:2rem 1rem}
+
+  /* Resultado cálculo: FOB/CIF empilhados */
+  #calc-result > div:first-child > div{
+    padding:1rem!important;
+  }
+
+  /* Carrinho modal */
+  .cart-item-row{flex-wrap:wrap;gap:6px}
+  #modal-carrinho .modal{max-height:85vh}
+  #modal-carrinho > div > div:last-child{flex-direction:column;gap:8px}
+  #modal-carrinho > div > div:last-child .btn{width:100%;justify-content:center}
+
+  /* Proposta modal campos */
+  #modal-proposta .form-grid{grid-template-columns:1fr!important}
+
+  /* Bottom nav */
+  .bnav-item{font-size:9px;padding:6px 2px 5px}
+  .bnav-item .bnav-icon{font-size:18px}
+}
+
+@media(max-width:400px){
+  .metrics-grid{grid-template-columns:1fr 1fr!important;gap:8px}
+  .metric-card .m-value{font-size:16px}
+  #r-pv-fob,#r-pv-cif{font-size:18px!important}
+  .page{padding:.5rem}
+  .topbar{padding:0 .5rem}
+}
+/* BOTTOM NAV */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:200;padding:0;padding-bottom:env(safe-area-inset-bottom)}
+.bottom-nav-items{display:flex;justify-content:space-around;align-items:stretch}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 6px;cursor:pointer;font-size:10px;color:var(--text3);gap:3px;transition:color 0.15s;border:none;background:none;font-family:var(--font);letter-spacing:0.03em}
+.bnav-item .bnav-icon{font-size:20px;line-height:1}
+.bnav-item.active{color:var(--accent)}
+.bnav-item:active{opacity:0.7}
+</style>
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="brand">Ribbon<span>Price</span></div>
+      <p>Sistema Comercial</p>
+    </div>
+    <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
+    <div class="form-group">
+      <label>Usuário</label>
+      <input type="text" id="inp-user" placeholder="seu.usuario" autocomplete="username" />
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="inp-pass" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Entrar →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">Ribbon<span>Price</span></div>
+      <p>Sistema Comercial</p>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Menu</div>
+      <div class="nav-item active" onclick="goPage('dashboard')" id="nav-dashboard"><span class="nav-icon">◈</span> Dashboard</div>
+      <div class="nav-item" onclick="goPage('calculo')" id="nav-calculo"><span class="nav-icon">⊞</span> Cálculo de Preço</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Cadastros</div>
+      <div class="nav-item" onclick="goPage('produtos')" id="nav-produtos"><span class="nav-icon">▦</span> Itens e Preços</div>
+      <div class="nav-item" onclick="goPage('clientes')" id="nav-clientes"><span class="nav-icon">◑</span> Clientes</div>
+      <div class="nav-item" onclick="goPage('impostos')" id="nav-impostos"><span class="nav-icon">◉</span> Impostos</div>
+      <div class="nav-item" onclick="goPage('fretes')" id="nav-fretes"><span class="nav-icon">◎</span> Fretes</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Admin</div>
+      <div class="nav-item" onclick="goPage('usuarios')" id="nav-usuarios">
+        <span class="nav-icon">◐</span> Usuários
+        <span class="lock-badge" id="lock-usuarios">🔒</span>
+      </div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="user-info">
+        <div class="user-avatar" id="sidebar-avatar">--</div>
+        <div>
+          <div class="user-name" id="sidebar-name">—</div>
+          <div class="user-role" id="sidebar-role">—</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">← Voltar ao Hub</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="topbar-title">Dashboard</span>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="cart-btn-wrap">
+          <button class="btn btn-accent" onclick="abrirCarrinho()" style="gap:6px">🛒 Carrinho</button>
+          <span class="cart-badge" id="cart-badge">0</span>
+        </div>
+        <span class="topbar-badge" id="topbar-user">—</span>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header" style="margin-bottom:1.5rem">
+        <h1 style="font-size:20px;font-weight:600">Visão Geral</h1>
+        <p style="font-size:13px;color:var(--text2);margin-top:3px">Bem-vindo ao RibbonPrice — sistema de precificação comercial</p>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="m-label">Produtos cadastrados</div><div class="m-value accent" id="dash-produtos">—</div></div>
+        <div class="metric-card"><div class="m-label">Cidades atendidas</div><div class="m-value blue" id="dash-cidades">—</div></div>
+        <div class="metric-card"><div class="m-label">Usuários ativos</div><div class="m-value" id="dash-users">—</div></div>
+        <div class="metric-card"><div class="m-label">Dólar vigente</div><div class="m-value green" id="dash-dolar">—</div></div>
+      </div>
+      <div id="dash-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="card">
+          <div class="card-title">Acesso rápido</div>
+          <div style="display:flex;flex-direction:column;gap:8px" id="quick-access"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Atividade recente</div>
+          <div class="dash-activity" id="activity-log"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CÁLCULO -->
+    <div class="page" id="page-calculo">
+      <div id="perm-calculo-denied" style="display:none" class="perm-denied">
+        <div class="icon">🔒</div><h3>Acesso restrito</h3><p>Você não tem permissão.</p>
+      </div>
+      <div id="perm-calculo-ok">
+        <div id="calc-layout" style="display:grid;grid-template-columns:420px 1fr;gap:1rem;align-items:start">
+          <!-- Formulário -->
+          <div>
+            <div class="card">
+              <div class="card-title">Produto</div>
+              <div class="form-grid cols2" style="margin-bottom:10px">
+                <div class="field"><label>Fabricante</label><select id="c-fab" onchange="calcFiltrarProd()"></select></div>
+                <div class="field"><label>Formulação</label><select id="c-form" onchange="calcFiltrarProd()"></select></div>
+              </div>
+              <div class="field" style="margin-bottom:10px">
+                <label>Produto</label>
+                <select id="c-produto" onchange="calcSelecionarProd()"></select>
+              </div>
+              <div class="form-grid cols2">
+                <div class="field"><label>Largura (mm)</label><input type="number" id="c-largura" value="110" oninput="calcular()" /></div>
+                <div class="field"><label>Comprimento (m)</label><input type="number" id="c-compr" value="450" oninput="calcular()" /></div>
+              </div>
+              <input type="hidden" id="c-vm2" />
+            </div>
+            <div class="card">
+              <div class="card-title">Pedido</div>
+              <div class="form-grid cols2" style="margin-bottom:12px">
+                <div class="field">
+                  <label>Tipo de venda</label>
+                  <select id="c-tipo" onchange="tipoVendaChange()" style="font-size:14px;padding:10px 12px">
+                    <option>INDUSTRIALIZAÇÃO</option>
+                    <option>USO E CONSUMO</option>
+                    <option>PRO EMPREGO</option>
+                    <option>BENEFÍCIO TÊXTIL</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Cidade destino</label>
+                  <select id="c-cidade" onchange="calcular()" style="font-size:14px;padding:10px 12px"></select>
+                </div>
+              </div>
+              <div class="form-grid cols2">
+                <div class="field"><label>Quantidade (peças)</label><input type="number" id="c-qtd" value="144" oninput="calcular()" /></div>
+                <div class="field"><label>Comissão (%)</label><input type="number" id="c-comissao" value="5" step="0.5" oninput="calcular()" /></div>
+                <div class="field"><label>ICMS na venda (%)</label><input type="number" id="c-icms" value="12" step="0.5" oninput="calcular()" style="background:var(--bg4);color:var(--accent)" readonly /></div>
+              </div>
+            </div>
+          </div>
+          <!-- Resultado -->
+          <div id="calc-result" style="display:none">
+            <div id="r-precos-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem">
+              <div style="background:var(--bg2);border:2px solid var(--accent);border-radius:var(--radius-lg);padding:1.25rem;text-align:center;box-shadow:var(--shadow)">
+                <div style="font-size:11px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem">PV Unitário — FOB</div>
+                <div id="r-pv-fob" style="font-size:32px;font-weight:700;font-family:var(--mono);color:var(--accent)">—</div>
+              </div>
+              <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;text-align:center;box-shadow:var(--shadow)">
+                <div style="font-size:11px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem">PV Unitário — CIF</div>
+                <div id="r-pv-cif" style="font-size:32px;font-weight:700;font-family:var(--mono);color:var(--text)">—</div>
+              </div>
+            </div>
+            <div id="r-cards-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1rem">
+              <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center;box-shadow:var(--shadow)">
+                <div style="font-size:11px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.4rem">Comissão (R$)</div>
+                <div id="r-comissao" style="font-size:20px;font-weight:600;font-family:var(--mono);color:var(--blue)">—</div>
+              </div>
+              <div id="r-margem-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center;box-shadow:var(--shadow)">
+                <div style="font-size:11px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.4rem">Margem</div>
+                <div id="r-margem" style="font-size:20px;font-weight:600;font-family:var(--mono);color:var(--green)">—</div>
+              </div>
+              <div id="r-lucro-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center;box-shadow:var(--shadow)">
+                <div style="font-size:11px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.4rem">Lucro total</div>
+                <div id="r-lucro" style="font-size:20px;font-weight:600;font-family:var(--mono);color:var(--green)">—</div>
+              </div>
+            </div>
+            <!-- Target logo após comissão -->
+            <div style="margin-bottom:1rem">
+              <div style="font-size:11px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Target concorrência (R$)</div>
+              <input type="number" id="c-target" step="0.01" placeholder="Digite o preço praticado pela concorrência"
+                oninput="calcular()"
+                style="width:100%;font-size:20px;font-weight:700;padding:12px 14px;background:var(--bg3);border:2px solid var(--border);border-radius:var(--radius-lg);color:var(--accent);font-family:var(--mono);outline:none;transition:border-color .15s"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+            </div>
+            <div class="card" style="margin-bottom:1rem;padding:.75rem 1rem">
+              <div id="r-frete-info"></div>
+            </div>
+            <!-- Botões adicionar ao carrinho -->
+            <div id="r-add-cart" style="display:none">
+              <div style="font-size:11px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Adicionar ao carrinho</div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <button class="btn btn-accent" onclick="addCarrinho('fob')" style="justify-content:space-between">
+                  <span>+ Adicionar — PV FOB</span><span id="cart-btn-fob" style="font-family:var(--mono);font-size:13px">—</span>
+                </button>
+                <button class="btn" onclick="addCarrinho('cif')" style="justify-content:space-between;border-color:var(--accent);color:var(--accent)">
+                  <span>+ Adicionar — PV CIF</span><span id="cart-btn-cif" style="font-family:var(--mono);font-size:13px">—</span>
+                </button>
+                <button class="btn" id="cart-btn-target-btn" onclick="addCarrinho('target')" style="justify-content:space-between;display:none">
+                  <span>+ Adicionar — Preço Target</span><span id="cart-btn-target" style="font-family:var(--mono);font-size:13px">—</span>
+                </button>
+              </div>
+            </div>
+            <!-- Target análise -->
+            <div id="r-target-panel" style="display:none;margin-top:1rem">
+              <div class="card" style="padding:.75rem 1rem">
+                <div style="font-size:11px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.75rem">Análise target</div>
+                <div id="r-target-info"></div>
+              </div>
+            </div>
+            <div id="calc-composicao" style="display:none"></div>
+            <div id="calc-precos" style="display:none"></div>
+            <div id="calc-frete-info" style="display:none"></div>
+            <div id="calc-alerta" style="display:none"></div>
+            <div id="calc-target" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUTOS -->
+    <div class="page" id="page-produtos">
+      <div id="perm-produtos-denied" style="display:none" class="perm-denied"><div class="icon">🔒</div><h3>Acesso restrito</h3><p>Permissão negada.</p></div>
+      <div id="perm-produtos-ok">
+        <div class="toolbar">
+          <div><div style="font-size:18px;font-weight:600">Itens e Preços</div><div style="font-size:13px;color:var(--text2);margin-top:2px">Catálogo de ribbons e valores por m²</div></div>
+          <div class="btn-row">
+            <div class="search-bar"><input type="text" id="prod-search" placeholder="Buscar produto..." oninput="renderProdutos()" /></div>
+            <button class="btn btn-accent" onclick="abrirModalProd(null)">+ Novo produto</button>
+          </div>
+        </div>
+        <div class="card" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Produto</th><th>Fabricante</th><th>Formulação</th><th>Tubete</th><th>Moeda</th><th>US$/m²</th><th>Cotação</th><th>R$/m²</th><th>Ref.</th><th>Ações</th></tr></thead>
+              <tbody id="prod-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text3)" id="prod-count"></div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="page" id="page-clientes">
+      <div class="toolbar">
+        <div><div style="font-size:18px;font-weight:600">Clientes</div><div style="font-size:13px;color:var(--text2);margin-top:2px">Cadastro de clientes para emissão de propostas</div></div>
+        <button class="btn btn-accent" onclick="abrirModalCliente(null)">+ Novo cliente</button>
+      </div>
+      <div class="card" style="padding:0">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nome</th><th>CNPJ/CPF</th><th>Telefone</th><th>E-mail</th><th>Cidade</th><th>UF</th><th>Ações</th></tr></thead>
+            <tbody id="clientes-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPOSTOS -->
+    <div class="page" id="page-impostos">
+      <div id="perm-impostos-denied" style="display:none" class="perm-denied"><div class="icon">🔒</div><h3>Acesso restrito</h3><p>Permissão negada.</p></div>
+      <div id="perm-impostos-ok">
+        <div class="page-header" style="margin-bottom:1.5rem"><h1 style="font-size:20px;font-weight:600">Cadastro de Impostos</h1><p style="font-size:13px;color:var(--text2);margin-top:3px">Alíquotas utilizadas no cálculo</p></div>
+        <div id="impostos-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="card">
+            <div class="card-title">Impostos de compra (créditos)</div>
+            <div class="form-grid">
+              <div class="field"><label>PIS compra (%)</label><input type="number" id="imp-pis-compra" step="0.01" oninput="saveImpostos()" /></div>
+              <div class="field"><label>COFINS compra (%)</label><input type="number" id="imp-cofins-compra" step="0.01" oninput="saveImpostos()" /></div>
+              <div class="field"><label>ICMS compra (%)</label><input type="number" id="imp-icms-compra" step="0.01" oninput="saveImpostos()" /></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Impostos de faturamento</div>
+            <div class="form-grid cols2">
+              <div class="field"><label>PIS (%)</label><input type="number" id="imp-pis" step="0.01" oninput="saveImpostos()" /></div>
+              <div class="field"><label>COFINS (%)</label><input type="number" id="imp-cofins" step="0.01" oninput="saveImpostos()" /></div>
+              <div class="field"><label>IRPJ (%)</label><input type="number" id="imp-irpj" step="0.01" oninput="saveImpostos()" /></div>
+              <div class="field"><label>CSLL (%)</label><input type="number" id="imp-csll" step="0.01" oninput="saveImpostos()" /></div>
+              <div class="field"><label>Frete compra (%)</label><input type="number" id="imp-frete-compra" step="0.01" oninput="saveImpostos()" /></div>
+              <div class="field"><label>Custo fixo (%)</label><input type="number" id="imp-custo-fixo" step="0.01" oninput="saveImpostos()" /></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Parâmetros gerais</div>
+            <div class="form-grid cols2">
+              <div class="field"><label>Margem de lucro (%)</label><input type="number" id="imp-margem" step="0.1" oninput="saveImpostos()" /></div>
+              <div class="field"><label>Dólar atual (R$)</label><input type="number" id="imp-dolar" step="0.01" oninput="saveImpostos()" /></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Tipos de venda</div>
+            <div id="tipos-venda" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"></div>
+            <div style="margin-top:12px;display:flex;gap:8px">
+              <input type="text" id="novo-tipo" placeholder="Novo tipo..." style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;flex:1" />
+              <button class="btn btn-accent" onclick="adicionarTipo()">Adicionar</button>
+            </div>
+          </div>
+        </div>
+        <div class="inline-alert ok" id="imp-saved" style="display:none">✓ Alterações salvas automaticamente</div>
+      </div>
+    </div>
+
+    <!-- FRETES -->
+    <div class="page" id="page-fretes">
+      <div id="perm-fretes-denied" style="display:none" class="perm-denied"><div class="icon">🔒</div><h3>Acesso restrito</h3><p>Permissão negada.</p></div>
+      <div id="perm-fretes-ok">
+        <div class="toolbar">
+          <div><div style="font-size:18px;font-weight:600">Cadastro de Fretes</div><div style="font-size:13px;color:var(--text2);margin-top:2px">Cidades, valores e transportadoras</div></div>
+          <div class="btn-row">
+            <div class="search-bar"><input type="text" id="frete-search" placeholder="Buscar cidade..." oninput="renderFretes()" /></div>
+            <button class="btn btn-accent" onclick="abrirModalFrete(null)">+ Nova cidade</button>
+          </div>
+        </div>
+        <div class="card" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Cidade</th><th>Valor frete</th><th>Fat. mínimo (frete pago)</th><th>Transportadora</th><th>Ações</th></tr></thead>
+              <tbody id="frete-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text3)" id="frete-count"></div>
+      </div>
+    </div>
+
+    <!-- USUÁRIOS -->
+    <div class="page" id="page-usuarios">
+      <div id="perm-usuarios-denied" style="display:none" class="perm-denied"><div class="icon">🔒</div><h3>Acesso restrito</h3><p>Apenas administradores.</p></div>
+      <div id="perm-usuarios-ok">
+        <div class="toolbar">
+          <div><div style="font-size:18px;font-weight:600">Gerenciar Usuários</div></div>
+          <button class="btn btn-accent" onclick="abrirModalUser(null)">+ Novo usuário</button>
+        </div>
+        <div class="card" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nome</th><th>Usuário</th><th>Perfil</th><th>Cálculo</th><th>Itens</th><th>Impostos</th><th>Fretes</th><th>Usuários</th><th>Ações</th></tr></thead>
+              <tbody id="user-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL PRODUTO -->
+<div class="modal-overlay" id="modal-prod">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modal-prod-title">Novo produto</h3><button class="modal-close" onclick="fecharModal('modal-prod')">×</button></div>
+    <div class="form-grid cols2">
+      <div class="field" style="grid-column:1/-1"><label>Nome do produto</label><input type="text" id="mp-nome" /></div>
+      <div class="field"><label>Fabricante</label><input type="text" id="mp-fab" oninput="atualizarMoedaProd()" /></div>
+      <div class="field"><label>Formulação</label><input type="text" id="mp-form" /></div>
+      <div class="field"><label>Tubete</label><input type="text" id="mp-tubete" placeholder='Ex: 1", 1/2", 3"' /></div>
+      <div class="field"><label>Referência</label><input type="text" id="mp-ref" /></div>
+    </div>
+    <div class="divider"></div>
+    <div id="mp-preco-bloco"></div>
+    <div class="form-grid cols2" style="margin-top:12px">
+      <div class="field" style="grid-column:1/-1"><label>Observação</label><input type="text" id="mp-obs" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="fecharModal('modal-prod')">Cancelar</button>
+      <button class="btn btn-accent" onclick="salvarProd()">Salvar produto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FRETE -->
+<div class="modal-overlay" id="modal-frete">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modal-frete-title">Nova cidade</h3><button class="modal-close" onclick="fecharModal('modal-frete')">×</button></div>
+    <div class="form-grid cols2">
+      <div class="field" style="grid-column:1/-1"><label>Cidade</label><input type="text" id="mf-cidade" /></div>
+      <div class="field"><label>Valor frete (R$)</label><input type="number" id="mf-valor" step="0.01" /></div>
+      <div class="field"><label>Fat. mínimo frete pago (R$)</label><input type="number" id="mf-minfat" step="100" /></div>
+      <div class="field" style="grid-column:1/-1"><label>Transportadora</label><input type="text" id="mf-transp" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="fecharModal('modal-frete')">Cancelar</button>
+      <button class="btn btn-accent" onclick="salvarFrete()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL USUÁRIO -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modal-user-title">Novo usuário</h3><button class="modal-close" onclick="fecharModal('modal-user')">×</button></div>
+    <div class="form-grid cols2">
+      <div class="field"><label>Nome completo</label><input type="text" id="mu-nome" /></div>
+      <div class="field"><label>Login</label><input type="text" id="mu-login" /></div>
+      <div class="field"><label>Senha</label><input type="password" id="mu-senha" /></div>
+      <div class="field"><label>Perfil</label>
+        <select id="mu-perfil" onchange="perfilChange()">
+          <option value="vendedor">Vendedor</option>
+          <option value="supervisor">Supervisor</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:12px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.75rem">Permissões</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);cursor:pointer"><input type="checkbox" id="perm-calculo" /> Módulo de cálculo</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);cursor:pointer"><input type="checkbox" id="perm-produtos" /> Cadastro de itens</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);cursor:pointer"><input type="checkbox" id="perm-impostos" /> Cadastro de impostos</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);cursor:pointer"><input type="checkbox" id="perm-fretes" /> Cadastro de fretes</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);cursor:pointer"><input type="checkbox" id="perm-usuarios" /> Gerenciar usuários</label>
+    </div>
+    <div class="inline-alert info" style="margin-top:.75rem">Administrador recebe todas as permissões automaticamente.</div>
+    <div class="modal-footer">
+      <button class="btn" onclick="fecharModal('modal-user')">Cancelar</button>
+      <button class="btn btn-accent" onclick="salvarUser()">Salvar usuário</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CARRINHO -->
+<div class="modal-overlay" id="modal-carrinho">
+  <div class="modal" style="width:620px">
+    <div class="modal-header"><h3>🛒 Carrinho de itens</h3><button class="modal-close" onclick="fecharModal('modal-carrinho')">×</button></div>
+    <div id="cart-lista"><div style="color:var(--text3);font-size:13px;padding:1rem 0;text-align:center">Carrinho vazio</div></div>
+    <div class="divider"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;color:var(--text2)">Total: <strong id="cart-total" style="color:var(--text);font-family:var(--mono)">R$ 0,00</strong></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-danger btn-sm" onclick="limparCarrinho()">Limpar tudo</button>
+        <button class="btn btn-sm" onclick="fecharModal('modal-carrinho');calcNovoItem()">+ Novo item</button>
+        <button class="btn btn-accent" onclick="fecharModal('modal-carrinho');abrirModalProposta()">Emitir proposta →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PROPOSTA -->
+<div class="modal-overlay" id="modal-proposta">
+  <div class="modal" style="width:580px">
+    <div class="modal-header"><h3>Emitir proposta</h3><button class="modal-close" onclick="fecharModal('modal-proposta')">×</button></div>
+    <div class="form-grid cols2" style="margin-bottom:1rem">
+      <div class="field" style="grid-column:1/-1">
+        <label>Cliente</label>
+        <div style="display:flex;gap:8px">
+          <select id="prop-cliente" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none"></select>
+          <button class="btn btn-sm" onclick="abrirModalCliente(null)">+ Novo</button>
+        </div>
+      </div>
+      <div class="field"><label>Forma de pagamento</label><input type="text" id="prop-pagamento" value="À Combinar" /></div>
+      <div class="field"><label>Prazo de entrega</label><input type="text" id="prop-prazo" value="À combinar" /></div>
+      <div class="field"><label>Validade</label><input type="text" id="prop-validade" value="10 dias" /></div>
+      <div class="field"><label>Representante</label><input type="text" id="prop-representante" value="VENDA DIRETA" /></div>
+      <div class="field" style="grid-column:1/-1">
+        <label>Observações</label>
+        <textarea id="prop-obs" rows="3" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;resize:vertical;width:100%">Faturado por empresa optante do Lucro Real (fornece crédito integral de ICMS)</textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="fecharModal('modal-proposta')">Cancelar</button>
+      <button class="btn btn-accent" onclick="gerarPDF()">Gerar PDF →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CLIENTE -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal" style="width:480px">
+    <div class="modal-header"><h3 id="modal-cliente-title">Novo cliente</h3><button class="modal-close" onclick="fecharModal('modal-cliente')">×</button></div>
+    <div class="form-grid cols2">
+      <div class="field" style="grid-column:1/-1"><label>Razão social / Nome</label><input type="text" id="mc-nome" /></div>
+      <div class="field"><label>CNPJ / CPF</label><input type="text" id="mc-cnpj" /></div>
+      <div class="field"><label>Telefone</label><input type="text" id="mc-fone" /></div>
+      <div class="field"><label>E-mail</label><input type="text" id="mc-email" /></div>
+      <div class="field" style="grid-column:1/-1"><label>Endereço</label><input type="text" id="mc-end" /></div>
+      <div class="field"><label>Cidade</label><input type="text" id="mc-cidade" /></div>
+      <div class="field"><label>UF</label><input type="text" id="mc-uf" value="SC" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="fecharModal('modal-cliente')">Cancelar</button>
+      <button class="btn btn-accent" onclick="salvarCliente()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV MOBILE -->
+<nav class="bottom-nav" id="bottom-nav">
+  <div class="bottom-nav-items">
+    <button class="bnav-item active" id="bnav-dashboard" onclick="goPage('dashboard')"><span class="bnav-icon">◈</span>Dashboard</button>
+    <button class="bnav-item" id="bnav-calculo" onclick="goPage('calculo')"><span class="bnav-icon">⊞</span>Cálculo</button>
+    <button class="bnav-item" id="bnav-produtos" onclick="goPage('produtos')"><span class="bnav-icon">▦</span>Itens</button>
+    <button class="bnav-item" id="bnav-mais" onclick="toggleMaisMenu()"><span class="bnav-icon">⋯</span>Mais</button>
+  </div>
+  <div id="bnav-mais-menu" style="display:none;border-top:1px solid var(--border);padding:.5rem">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:.25rem">
+      <button class="bnav-item" style="flex-direction:row;gap:8px;padding:10px;background:var(--bg3);border-radius:var(--radius);font-size:12px" onclick="goPage('clientes');toggleMaisMenu()"><span style="font-size:16px">◑</span>Clientes</button>
+      <button class="bnav-item" style="flex-direction:row;gap:8px;padding:10px;background:var(--bg3);border-radius:var(--radius);font-size:12px" onclick="goPage('impostos');toggleMaisMenu()"><span style="font-size:16px">◉</span>Impostos</button>
+      <button class="bnav-item" style="flex-direction:row;gap:8px;padding:10px;background:var(--bg3);border-radius:var(--radius);font-size:12px" onclick="goPage('fretes');toggleMaisMenu()"><span style="font-size:16px">◎</span>Fretes</button>
+      <button class="bnav-item" id="bnav-usuarios-btn" style="flex-direction:row;gap:8px;padding:10px;background:var(--bg3);border-radius:var(--radius);font-size:12px" onclick="goPage('usuarios');toggleMaisMenu()"><span style="font-size:16px">◐</span>Usuários</button>
+      <button class="bnav-item" style="flex-direction:row;gap:8px;padding:10px;background:var(--red-dim);border-radius:var(--radius);font-size:12px;color:var(--red)" onclick="doLogout()"><span style="font-size:16px">←</span>Hub</button>
+    </div>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+// ═══════════════════════════════════
+// DADOS INICIAIS
+// ═══════════════════════════════════
+
+const STORAGE_KEY = 'ribbonprice_v2';
+
+function defaultData() {
+  return {
+    usuarios: [
+      { id:1, nome:'Administrador', login:'admin', senha:'admin123', perfil:'admin',
+        perms:{calculo:true,produtos:true,impostos:true,fretes:true,usuarios:true} },
+      { id:2, nome:'Vendedor Demo', login:'vendedor', senha:'venda123', perfil:'vendedor',
+        perms:{calculo:true,produtos:false,impostos:false,fretes:false,usuarios:false} },
+      { id:3, nome:'Supervisor', login:'supervisor', senha:'super123', perfil:'supervisor',
+        perms:{calculo:true,produtos:true,impostos:true,fretes:true,usuarios:false} },
+    ],
+    impostos: {
+      pisCompra:1.15, cofinsCompra:7.60, icmsCompra:12.00,
+      pis:1.15, cofins:4.00, irpj:0.90, csll:1.90, freteCompra:2.00, custoFixo:5.00,
+      margem:13, dolar:5.30,
+      tiposVenda:['INDUSTRIALIZAÇÃO','USO E CONSUMO','PRO EMPREGO','BENEFÍCIO TÊXTIL']
+    },
+    produtos: [
+      {id:1,nome:'CERA Armor - AWR 1 - 1/2"',fab:'Armor',form:'CERA',tubete:'1/2"',ref:'AWR 1',usd:0.087,brl:0.46,obs:''},
+      {id:2,nome:'CERA Armor - AWR 1 - 1"',fab:'Armor',form:'CERA',tubete:'1"',ref:'AWR 1',usd:0.079,brl:0.42,obs:''},
+      {id:3,nome:'CERA Armor - AWR 8 - 1"',fab:'Armor',form:'CERA',tubete:'1"',ref:'AWR 8',usd:0.133,brl:0.70,obs:''},
+      {id:4,nome:'CERA PREMIUM Armor - AWX FH - 1"',fab:'Armor',form:'CERA PREMIUM',tubete:'1"',ref:'AWX FH',usd:0.149,brl:0.79,obs:''},
+      {id:5,nome:'MISTO Armor - APR 1 - 1"',fab:'Armor',form:'MISTO',tubete:'1"',ref:'APR 1',usd:0.199,brl:1.05,obs:''},
+      {id:6,nome:'MISTO Armor - APR 6 - 1"',fab:'Armor',form:'MISTO',tubete:'1"',ref:'APR 6',usd:0.256,brl:1.36,obs:''},
+      {id:7,nome:'MISTO Armor - APX8 - 1"',fab:'Armor',form:'MISTO',tubete:'1"',ref:'APX8',usd:0.310,brl:1.64,obs:''},
+      {id:8,nome:'NEAR EDGE MISTO ARMOR FPX - 1"',fab:'Armor',form:'NEAR EDGE',tubete:'1"',ref:'FPX NE',usd:0.275,brl:1.46,obs:''},
+      {id:9,nome:'RESINA Armor - AXR 1 - 1"',fab:'Armor',form:'RESINA',tubete:'1"',ref:'AXR 1',usd:0.374,brl:1.98,obs:''},
+      {id:10,nome:'RESINA Armor - AXR 7+ - 1"',fab:'Armor',form:'RESINA',tubete:'1"',ref:'AXR 7+',usd:0.397,brl:2.10,obs:''},
+      {id:11,nome:'RESINA Armor - AXR 8 - 1"',fab:'Armor',form:'RESINA',tubete:'1"',ref:'AXR 8',usd:0.704,brl:3.73,obs:''},
+      {id:12,nome:'RESINA Armor - ATX9 - 1"',fab:'Armor',form:'RESINA',tubete:'1"',ref:'ATX9',usd:0.602,brl:3.19,obs:''},
+      {id:13,nome:'CETIM BRANCO ARMOR ATS601',fab:'Armor',form:'TECIDO',tubete:'1"',ref:'ATS601',usd:1.40,brl:7.42,obs:'Aceita impressão de um lado'},
+      {id:14,nome:'NYLON NTKE',fab:'Armor',form:'NYLON',tubete:'3"',ref:'NTKE',usd:0.3868,brl:2.05,obs:''},
+      {id:15,nome:'NYLON LAVAÇÃO PESADA ATP811',fab:'Armor',form:'NYLON',tubete:'1"',ref:'ATP811',usd:4.00,brl:21.20,obs:''},
+      {id:16,nome:'CERA Iimak - GCP - 1"',fab:'Iimak',form:'CERA',tubete:'1"',ref:'GCP',usd:0.080,brl:0.42,obs:''},
+      {id:17,nome:'MISTO Iimak - PM250 - 1"',fab:'Iimak',form:'MISTO',tubete:'1"',ref:'PM250',usd:0.168,brl:0.89,obs:''},
+      {id:18,nome:'SUPER RESINA Iimak - SP - 1"',fab:'Iimak',form:'RESINA',tubete:'1"',ref:'SP',usd:0.347,brl:1.84,obs:''},
+      {id:19,nome:'ULTRA RESINA Iimak - SP2 - 1"',fab:'Iimak',form:'RESINA PREMIUM',tubete:'1"',ref:'SP2',usd:0.572,brl:3.03,obs:''},
+      {id:20,nome:'CERA Mastercorp - G45 - 1" (Padrão)',fab:'Mastercorp',form:'CERA',tubete:'1"',ref:'G45',usd:0.0717,brl:0.38,obs:'110x300, 110x360, 110x450'},
+      {id:21,nome:'CERA Mastercorp - G50 - 1" (Padrão)',fab:'Mastercorp',form:'CERA',tubete:'1"',ref:'G50',usd:0.0717,brl:0.38,obs:''},
+      {id:22,nome:'MISTO Mastercorp - K115 - 1"',fab:'Mastercorp',form:'MISTO',tubete:'1"',ref:'K115',usd:0.1415,brl:0.75,obs:''},
+      {id:23,nome:'MISTO Mastercorp - K150 - 1"',fab:'Mastercorp',form:'MISTO',tubete:'1"',ref:'K150',usd:0.1604,brl:0.85,obs:''},
+      {id:24,nome:'MISTO PREMIUM Mastercorp - K200 - 1"',fab:'Mastercorp',form:'MISTO PREMIUM',tubete:'1"',ref:'K200',usd:0.2358,brl:1.25,obs:''},
+      {id:25,nome:'RESINA Mastercorp - Z350 - 1"',fab:'Mastercorp',form:'RESINA',tubete:'1"',ref:'Z350',usd:0.2736,brl:1.45,obs:''},
+      {id:26,nome:'RESINA Mastercorp - Z400 - 1"',fab:'Mastercorp',form:'RESINA',tubete:'1"',ref:'Z400',usd:0.4245,brl:2.25,obs:''},
+      {id:27,nome:'RESINA PREMIUM Mastercorp - Z500 - 1"',fab:'Mastercorp',form:'RESINA PREMIUM',tubete:'1"',ref:'Z500',usd:0.4585,brl:2.43,obs:''},
+      {id:28,nome:'RESINA TEXTIL Mastercorp - TR45 - 1"',fab:'Mastercorp',form:'RESINA TEXTIL',tubete:'1"',ref:'TR45',usd:0.5472,brl:2.90,obs:''},
+      {id:29,nome:'NEAR EDGE Mastercorp - NE230X - 1"',fab:'Mastercorp',form:'NEAR EDGE',tubete:'1"',ref:'NE230X',usd:0.2453,brl:1.30,obs:''},
+      {id:30,nome:'TODAYTECH CERA TDW108 - 1" (Padrão)',fab:'Todaytech',form:'CERA',tubete:'1"',ref:'TDW108',usd:0.0680,brl:0.36,obs:'110x300, 110x360, 110x450'},
+      {id:31,nome:'TODAYTECH CERA PREMIUM TDW121 - 1"',fab:'Todaytech',form:'CERA PREMIUM',tubete:'1"',ref:'TDW121',usd:0.105,brl:0.56,obs:''},
+      {id:32,nome:'TODAYTECH MISTO TDM200 - 1"',fab:'Todaytech',form:'MISTO',tubete:'1"',ref:'TDM200',usd:0.150,brl:0.80,obs:''},
+      {id:33,nome:'TODAYTECH RESINA TDR380 - 1"',fab:'Todaytech',form:'RESINA',tubete:'1"',ref:'TDR380',usd:0.380,brl:2.01,obs:''},
+      {id:34,nome:'RIBBON MISTO Syntpaper - SY-M',fab:'Syntpaper',form:'MISTO',tubete:'3"',ref:'SY-M',usd:0.167,brl:0.89,obs:''},
+      {id:35,nome:'CETIM BRANCO Syntpaper - NY221',fab:'Syntpaper',form:'TECIDO',tubete:'3"',ref:'NY221',usd:0.66,brl:3.50,obs:''},
+      {id:36,nome:'NYLON LAVAÇÃO PESADA Syntpaper PT665',fab:'Syntpaper',form:'NYLON',tubete:'3"',ref:'PT665',usd:2.17,brl:11.50,obs:''},
+      {id:37,nome:'RESINA K5000 Kurz',fab:'Kurz',form:'RESINA',tubete:'1"',ref:'K5000',usd:1.0604,brl:5.62,obs:'Preço sobre consulta'},
+      {id:38,nome:'NYLON FULL - 1"',fab:'Full',form:'NYLON',tubete:'1"',ref:'NYLON',usd:0.4811,brl:2.55,obs:''},
+      {id:39,nome:'RIBBON VR Near Edge Misto VRN-06',fab:'Vitória Régia',form:'NEAR EDGE',tubete:'1"',ref:'VRN-06',usd:0.2208,brl:1.17,obs:''},
+      {id:40,nome:'BOBINA TRANSFER PARDO',fab:'Eurotransfer',form:'TRANSFER',tubete:'3"',ref:'KRAFT E15',usd:3.3962,brl:18.00,obs:''},
+    ],
+    fretes: [
+      {id:1,cidade:'AGRONOMICA',valor:45,minFat:2200,transp:'Expresso São Miguel'},
+      {id:2,cidade:'ARAQUARI',valor:37,minFat:1850,transp:'Eduardo / ELP'},
+      {id:3,cidade:'APIUNA',valor:35,minFat:1700,transp:'Disk & Tenha'},
+      {id:4,cidade:'ASCURRA',valor:40,minFat:1900,transp:'Disk & Tenha'},
+      {id:5,cidade:'AURORA',valor:49,minFat:2450,transp:'Disk & Tenha'},
+      {id:6,cidade:'BALNEÁRIO CAMBORIÚ',valor:33,minFat:1650,transp:'Eduardo / ELP'},
+      {id:7,cidade:'BARRA VELHA',valor:40,minFat:2000,transp:'Eduardo / ELP'},
+      {id:8,cidade:'BENEDITO NOVO',valor:41,minFat:2050,transp:'Eduardo / ELP'},
+      {id:9,cidade:'BIGUAÇU',valor:50,minFat:2500,transp:'Eduardo / ELP'},
+      {id:10,cidade:'BLUMENAU',valor:15,minFat:750,transp:'Eduardo / ELP'},
+      {id:11,cidade:'BOTUVERA',valor:60,minFat:1800,transp:'Eduardo / ELP'},
+      {id:12,cidade:'BRUSQUE',valor:33,minFat:1650,transp:'Eduardo / ELP'},
+      {id:13,cidade:'CAMBORIÚ',valor:34,minFat:1700,transp:'Eduardo / ELP'},
+      {id:14,cidade:'CANELINHA',valor:40,minFat:1900,transp:'Disk & Tenha'},
+      {id:15,cidade:'CORUPA',valor:38,minFat:1900,transp:'Eduardo / ELP'},
+      {id:16,cidade:'FLORIANÓPOLIS',valor:50,minFat:2500,transp:'Disk & Tenha'},
+      {id:17,cidade:'GASPAR',valor:20,minFat:900,transp:'Eduardo / ELP'},
+      {id:18,cidade:'GUABIRUBA',valor:37,minFat:1850,transp:'Eduardo / ELP'},
+      {id:19,cidade:'GUARAMIRIM',valor:33,minFat:1650,transp:'Eduardo / ELP'},
+      {id:20,cidade:'IBIRAMA',valor:40,minFat:1950,transp:'Disk & Tenha'},
+      {id:21,cidade:'ILHOTA',valor:28,minFat:1400,transp:'Eduardo / ELP'},
+      {id:22,cidade:'INDAIAL',valor:18,minFat:900,transp:'Eduardo / ELP'},
+      {id:23,cidade:'ITAJAÍ',valor:33,minFat:1650,transp:'Eduardo / ELP'},
+      {id:24,cidade:'ITAPEMA',valor:35,minFat:1750,transp:'Eduardo / ELP'},
+      {id:25,cidade:'JARAGUÁ DO SUL',valor:33,minFat:1650,transp:'Eduardo / ELP / Disk & Tenha'},
+      {id:26,cidade:'JOINVILLE',valor:38,minFat:1900,transp:'Expresso São Miguel / Eduardo'},
+      {id:27,cidade:'LAURENTINO',valor:49,minFat:2450,transp:'Disk & Tenha'},
+      {id:28,cidade:'LUIZ ALVES',valor:18,minFat:900,transp:'Eduardo / ELP'},
+      {id:29,cidade:'MASSARANDUBA',valor:33,minFat:1650,transp:'Eduardo / ELP / Disk & Tenha'},
+      {id:30,cidade:'NAVEGANTES',valor:33,minFat:1650,transp:'Eduardo / ELP'},
+      {id:31,cidade:'NOVA TRENTO',valor:45,minFat:1950,transp:'Disk & Tenha'},
+      {id:32,cidade:'PALHOÇA',valor:50,minFat:2500,transp:'Expresso São Miguel'},
+      {id:33,cidade:'PENHA',valor:33,minFat:1650,transp:'Eduardo / ELP'},
+      {id:34,cidade:'PIÇARRAS',valor:40,minFat:2000,transp:'Eduardo / ELP'},
+      {id:35,cidade:'POMERODE',valor:20,minFat:900,transp:'Eduardo / ELP'},
+      {id:36,cidade:'PORTO BELO',valor:40,minFat:1850,transp:'Disk & Tenha'},
+      {id:37,cidade:'PRESIDENTE GETÚLIO',valor:42,minFat:2100,transp:'Expresso São Miguel'},
+      {id:38,cidade:'RIO DO SUL',valor:42,minFat:2100,transp:'Expresso São Miguel'},
+      {id:39,cidade:'RIO DOS CEDROS',valor:41,minFat:2050,transp:'Disk & Tenha'},
+      {id:40,cidade:'RODEIO',valor:41,minFat:2050,transp:'Disk & Tenha'},
+      {id:41,cidade:'SÃO BENTO DO SUL',valor:50,minFat:2250,transp:'Disk & Tenha'},
+      {id:42,cidade:'SÃO JOÃO BATISTA',valor:45,minFat:1950,transp:'Disk & Tenha'},
+      {id:43,cidade:'SÃO JOSÉ',valor:50,minFat:2500,transp:'Eduardo / ELP'},
+      {id:44,cidade:'TIJUCAS',valor:40,minFat:1900,transp:'Eduardo / ELP'},
+      {id:45,cidade:'TIMBÓ',valor:20,minFat:900,transp:'Eduardo / ELP'},
+      {id:46,cidade:'OUTROS',valor:150,minFat:4000,transp:'—'},
+      {id:47,cidade:'COM TX DE DIFICULDADE',valor:400,minFat:4000,transp:'—'},
+    ],
+    activity: [],
+    nextId: { produto: 41, frete: 48, usuario: 4, proposta: 48929, cliente: 10 },
+    clientes: [
+      { id:1, nome:'TECELAGEM LMPETER LTDA', cnpj:'—', fone:'(47) 3351-0992', email:'', cidade:'Blumenau', uf:'SC' },
+      { id:2, nome:'Arte Soluções Gráficas Ltda', cnpj:'05.079.758/0001-80', fone:'(47) 3323-9565', email:'', end:'Rua Dr. Fritz Mueller, 1270 - Salto', cidade:'Blumenau', uf:'SC' },
+    ]
+  };
+  d.produtos.forEach(p => {
+    if(!p.moeda) {
+      p.moeda = p.fab.toLowerCase().includes('mastercorp') ? 'BRL' : 'USD';
+      if(!p.cotacao && p.moeda === 'USD') p.cotacao = 5.30;
+    }
+  });
+  return d;
+}
+
+function loadData() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    const d = s ? JSON.parse(s) : defaultData();
+    // Garantir campo moeda/cotacao em produtos legados
+    d.produtos.forEach(p => {
+      if(!p.moeda) {
+        p.moeda = p.fab.toLowerCase().includes('mastercorp') ? 'BRL' : 'USD';
+        if(!p.cotacao && p.moeda === 'USD') p.cotacao = 5.30;
+      }
+    });
+    // Garantir clientes inicializados
+    if(!d.clientes) d.clientes = defaultData().clientes;
+    // Garantir Arte Soluções no cadastro
+    const temArte = d.clientes.some(c => c.cnpj === '05.079.758/0001-80');
+    if(!temArte) {
+      d.clientes.push({ id:2, nome:'Arte Soluções Gráficas Ltda', cnpj:'05.079.758/0001-80', fone:'(47) 3323-9565', email:'', end:'Rua Dr. Fritz Mueller, 1270 - Salto', cidade:'Blumenau', uf:'SC' });
+    }
+    // Garantir nextId proposta e cliente
+    if(!d.nextId.proposta) d.nextId.proposta = 48929;
+    if(!d.nextId.cliente) d.nextId.cliente = 10;
+    return d;
+  } catch(e) { return defaultData(); }
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+}
+
+let DB = loadData();
+// Auto-login: autenticação é controlada pelo Hub Gestão pai
+let currentUser = DB.usuarios.find(u => u.perfil === 'admin') || DB.usuarios[0];
+let editingProdId = null;
+let editingFreteId = null;
+let editingUserId = null;
+
+// ═══════════════════════════════════
+// AUTH (desabilitado — hub controla auth)
+// ═══════════════════════════════════
+
+document.getElementById('inp-pass').addEventListener('keydown', e => {
+  if(e.key==='Enter') doLogin();
+});
+document.getElementById('inp-user').addEventListener('keydown', e => {
+  if(e.key==='Enter') document.getElementById('inp-pass').focus();
+});
+
+function doLogin() {
+  const login = document.getElementById('inp-user').value.trim();
+  const senha = document.getElementById('inp-pass').value;
+  const user = DB.usuarios.find(u => u.login===login && u.senha===senha);
+  if(!user) {
+    document.getElementById('login-error').style.display='block';
+    return;
+  }
+  currentUser = user;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  initApp();
+  addActivity(user.nome+' fez login');
+}
+
+function toggleMaisMenu() {
+  const menu = document.getElementById('bnav-mais-menu');
+  if(!menu) return;
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  const btn = document.getElementById('bnav-mais');
+  if(btn) btn.classList.toggle('active', menu.style.display !== 'none');
+}
+
+function doLogout() {
+  saveData();
+  // Volta para o submenu de Orçamento no Hub pai
+  if(window.parent && window.parent !== window) {
+    try { window.parent.App.navigate('submenu-orcamento'); return; } catch(e){}
+  }
+  window.location.href = './index.html';
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+
+function initApp() {
+  const u = currentUser;
+  const initials = u.nome.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('sidebar-avatar').textContent = initials;
+  document.getElementById('sidebar-name').textContent = u.nome;
+  const roles = {admin:'Administrador',supervisor:'Supervisor',vendedor:'Vendedor'};
+  document.getElementById('sidebar-role').textContent = roles[u.perfil]||u.perfil;
+  document.getElementById('topbar-user').textContent = u.login;
+
+  const lockEl = document.getElementById('lock-usuarios');
+  if(lockEl) lockEl.style.display = u.perms.usuarios ? 'none' : 'inline';
+  const bnavUsuarios = document.getElementById('bnav-usuarios-btn');
+  if(bnavUsuarios) bnavUsuarios.style.display = u.perms.usuarios ? 'flex' : 'none';
+
+  loadImpostos();
+  calcPopularFiltros();
+  renderDashboard();
+  goPage('dashboard');
+}
+
+function addActivity(txt) {
+  if(!DB.activity) DB.activity=[];
+  DB.activity.unshift({ txt, time: new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) });
+  if(DB.activity.length > 20) DB.activity.pop();
+  saveData();
+}
+
+// ═══════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════
+
+const pageTitles = {
+  dashboard:'Dashboard', calculo:'Cálculo de Preço', produtos:'Itens e Preços',
+  impostos:'Cadastro de Impostos', fretes:'Cadastro de Fretes', usuarios:'Gerenciar Usuários'
+};
+
+function goPage(pg) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pageEl = document.getElementById('page-'+pg);
+  const navEl = document.getElementById('nav-'+pg);
+  if(pageEl) pageEl.classList.add('active');
+  if(navEl) navEl.classList.add('active');
+  document.getElementById('topbar-title').textContent = pageTitles[pg]||pg;
+
+  const permMap = {calculo:'calculo',produtos:'produtos',impostos:'impostos',fretes:'fretes',usuarios:'usuarios'};
+  if(permMap[pg]) checkPerm(permMap[pg]);
+
+  if(pg==='dashboard') renderDashboard();
+  if(pg==='produtos') renderProdutos();
+  if(pg==='fretes') renderFretes();
+  if(pg==='impostos') loadImpostos();
+  if(pg==='usuarios') renderUsuarios();
+  if(pg==='calculo') { calcPopularFiltros(); calcPopularCidades(); }
+  if(pg==='clientes') renderClientes();
+
+  // Sync bottom nav
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  const bnavEl = document.getElementById('bnav-'+pg);
+  if(bnavEl) bnavEl.classList.add('active');
+  // Fechar menu mais se aberto
+  const maisMenu = document.getElementById('bnav-mais-menu');
+  if(maisMenu) maisMenu.style.display = 'none';
+}
+
+function checkPerm(mod) {
+  const has = currentUser.perms[mod];
+  const denied = document.getElementById('perm-'+mod+'-denied');
+  const ok = document.getElementById('perm-'+mod+'-ok');
+  if(denied) denied.style.display = has ? 'none' : 'flex';
+  if(ok) ok.style.display = has ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════
+
+function renderDashboard() {
+  document.getElementById('dash-produtos').textContent = DB.produtos.length;
+  document.getElementById('dash-cidades').textContent = DB.fretes.length;
+  document.getElementById('dash-users').textContent = DB.usuarios.length;
+  document.getElementById('dash-dolar').textContent = 'R$ '+DB.impostos.dolar.toFixed(2);
+
+  const mods = [
+    {page:'calculo',icon:'⊞',label:'Cálculo de Preço',perm:'calculo'},
+    {page:'produtos',icon:'▦',label:'Itens e Preços',perm:'produtos'},
+    {page:'impostos',icon:'◉',label:'Impostos',perm:'impostos'},
+    {page:'fretes',icon:'◎',label:'Fretes',perm:'fretes'},
+    {page:'usuarios',icon:'◐',label:'Usuários',perm:'usuarios'},
+  ];
+  const qa = document.getElementById('quick-access');
+  qa.innerHTML = mods.filter(m=>currentUser.perms[m.perm]).map(m=>
+    `<button class="btn" onclick="goPage('${m.page}')" style="justify-content:flex-start;gap:10px">
+      <span style="color:var(--accent)">${m.icon}</span> ${m.label}
+      <span style="margin-left:auto;color:var(--text3);font-size:12px">→</span>
+    </button>`
+  ).join('');
+
+  const al = document.getElementById('activity-log');
+  if(!DB.activity || DB.activity.length===0) {
+    al.innerHTML='<div style="color:var(--text3);font-size:13px;padding:1rem 0">Nenhuma atividade ainda.</div>';
+    return;
+  }
+  al.innerHTML = DB.activity.slice(0,8).map(a=>
+    `<div class="activity-item">
+      <div class="activity-dot"></div>
+      <div class="activity-text">${a.txt}</div>
+      <div class="activity-time">${a.time}</div>
+    </div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════
+// CÁLCULO
+// ═══════════════════════════════════
+
+function calcPopularFiltros() {
+  const fabs = [...new Set(DB.produtos.map(p=>p.fab))].sort();
+  const forms = [...new Set(DB.produtos.map(p=>p.form))].sort();
+  const fabSel = document.getElementById('c-fab');
+  const formSel = document.getElementById('c-form');
+  if(!fabSel) return;
+  fabSel.innerHTML = '<option value="">Todos</option>' + fabs.map(f=>`<option>${f}</option>`).join('');
+  formSel.innerHTML = '<option value="">Todas</option>' + forms.map(f=>`<option>${f}</option>`).join('');
+  calcFiltrarProd();
+}
+
+let calcProdsFiltrados = [];
+
+function calcFiltrarProd() {
+  const fab = document.getElementById('c-fab').value;
+  const form = document.getElementById('c-form').value;
+  calcProdsFiltrados = DB.produtos.filter(p=>(!fab||p.fab===fab)&&(!form||p.form===form));
+  const sel = document.getElementById('c-produto');
+  sel.innerHTML = calcProdsFiltrados.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+  calcSelecionarProd();
+}
+
+function calcSelecionarProd() {
+  const id = parseInt(document.getElementById('c-produto').value);
+  const p = DB.produtos.find(x=>x.id===id);
+  if(p) document.getElementById('c-vm2').value = p.brl.toFixed(2);
+  calcular();
+}
+
+function calcPopularCidades() {
+  const sel = document.getElementById('c-cidade');
+  if(!sel) return;
+  sel.innerHTML = DB.fretes.map(f=>`<option value="${f.id}">${f.cidade}</option>`).join('');
+  const nav = DB.fretes.find(f=>f.cidade==='NAVEGANTES');
+  if(nav) sel.value = nav.id;
+  tipoVendaChange();
+}
+
+function fmt(v) {
+  return 'R$ '+v.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+
+function tipoVendaChange() {
+  const tipo = document.getElementById('c-tipo').value.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  let icms = 12;
+  if(tipo.includes('PRO EMPREGO'))     icms = 0;
+  if(tipo.includes('USO E CONSUMO'))   icms = 17;
+  if(tipo.includes('BENEFICIO') || tipo.includes('TEXTIL')) icms = 3;
+  if(tipo.includes('INDUSTRIALIZACAO') || tipo.includes('INDUSTRIALIZ')) icms = 12;
+  const icmsEl = document.getElementById('c-icms');
+  if(icmsEl) icmsEl.value = icms;
+  calcular();
+}
+
+function calcular() {
+  const imp = DB.impostos;
+  const vm2   = parseFloat(document.getElementById('c-vm2')?.value)||0;
+  const larg  = parseFloat(document.getElementById('c-largura')?.value)||0;
+  const comp  = parseFloat(document.getElementById('c-compr')?.value)||0;
+  const qtd   = parseFloat(document.getElementById('c-qtd')?.value)||0;
+  const icms  = parseFloat(document.getElementById('c-icms')?.value)||0;
+  const com   = parseFloat(document.getElementById('c-comissao')?.value)||0;
+  const freteId = parseInt(document.getElementById('c-cidade')?.value);
+  const freteDados = DB.fretes.find(f=>f.id===freteId)||DB.fretes[0];
+
+  if(!vm2||!larg||!comp||!qtd) {
+    document.getElementById('calc-result').style.display='none';
+    return;
+  }
+
+  // ── CÁLCULO BASE ──
+  const custoUnit      = vm2 * (larg/1000) * comp;
+  const fretePorPeca   = qtd>0 ? freteDados.valor/qtd : 0;
+  const tipo           = document.getElementById('c-tipo').value;
+  const tipoNorm       = tipo.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const isBeneficio    = tipoNorm.includes('BENEFICIO') || tipoNorm.includes('TEXTIL');
+  const deducaoCompra  = isBeneficio
+    ? (imp.pisCompra + imp.cofinsCompra) / 100
+    : (imp.pisCompra + imp.cofinsCompra + imp.icmsCompra) / 100;
+  const freteCompraUnit = custoUnit * (imp.freteCompra / 100);
+  const custoLiq       = custoUnit - (custoUnit * deducaoCompra) + freteCompraUnit;
+  const grupo1         = imp.pis + imp.cofins + imp.irpj + imp.csll + icms;
+  const grupo2         = com + imp.custoFixo + imp.margem;
+  const totalDeducoes  = grupo1 + grupo2;
+  const pvFob          = custoLiq / ((100 - totalDeducoes) / 100);
+  const pvCif          = pvFob + fretePorPeca;
+  const faturamento    = pvFob * qtd;
+  const fretePago      = faturamento >= freteDados.minFat;
+
+  // Resultado financeiro
+  const fatTotal      = faturamento;
+  const custoLiqTotal = custoLiq * qtd;
+  const vComissao     = fatTotal * (com / 100);
+  const vImpostos     = fatTotal * (grupo1 / 100);
+  const vCustoFixo    = fatTotal * (imp.custoFixo / 100);
+  const totalCustos   = custoLiqTotal + vImpostos + vComissao + vCustoFixo;
+  const saldo         = fatTotal - totalCustos;
+  const margemFat     = (saldo / fatTotal) * 100;
+
+  // ── EXIBIR RESULTADO ──
+  document.getElementById('calc-result').style.display = 'block';
+
+  const isVendedor = currentUser.perfil === 'vendedor';
+
+  // Preços em destaque
+  document.getElementById('r-pv-fob').textContent = fmt(pvFob);
+  document.getElementById('r-pv-cif').textContent = fmt(pvCif);
+  document.getElementById('r-comissao').textContent = fmt(vComissao);
+
+  // Snapshot para carrinho
+  const sel = document.getElementById('c-produto');
+  const nomeProd = sel?.options[sel?.selectedIndex]?.text || 'Produto';
+  calcAtual = {
+    nomeProduto: nomeProd,
+    largura: larg, comprimento: comp, qtd: qtd,
+    pvFob: pvFob, pvCif: pvCif,
+    targetVal: parseFloat(document.getElementById('c-target')?.value)||0,
+    comissao: com, vComissao: vComissao,
+    tipoVenda: tipo,
+  };
+
+  // Botões carrinho
+  const addCart = document.getElementById('r-add-cart');
+  if(addCart) addCart.style.display = 'block';
+  const bFob = document.getElementById('cart-btn-fob');
+  const bCif = document.getElementById('cart-btn-cif');
+  if(bFob) bFob.textContent = fmt(pvFob);
+  if(bCif) bCif.textContent = fmt(pvCif);
+  const tgt = parseFloat(document.getElementById('c-target')?.value)||0;
+  const btnTarget = document.getElementById('cart-btn-target-btn');
+  const btnTargetVal = document.getElementById('cart-btn-target');
+  if(btnTarget) btnTarget.style.display = tgt > 0 ? 'flex' : 'none';
+  if(btnTargetVal && tgt > 0) btnTargetVal.textContent = fmt(tgt);
+
+  // Margem e lucro: oculto para vendedor
+  const margemCard = document.getElementById('r-margem-card');
+  const lucroCard  = document.getElementById('r-lucro-card');
+  if(margemCard) margemCard.style.display = isVendedor ? 'none' : 'block';
+  if(lucroCard)  lucroCard.style.display  = isVendedor ? 'none' : 'block';
+  document.getElementById('r-margem').textContent = margemFat.toFixed(2)+'%';
+  document.getElementById('r-lucro').textContent = fmt(saldo);
+
+  // Frete — exibe só cidade e alerta se não atingir mínimo
+  document.getElementById('r-frete-info').innerHTML =
+    '<div class="result-row"><span class="rn">Cidade destino</span><span class="rv">'+freteDados.cidade+'</span></div>'
+    +(!fretePago ? '<div class="inline-alert warn" style="margin-top:.5rem">Faturamento '+fmt(fatTotal)+' abaixo do mínimo de '+fmt(freteDados.minFat)+' para frete pago.</div>' : '');
+
+  // ── ANÁLISE TARGET ──
+  const targetVal = parseFloat(document.getElementById('c-target')?.value)||0;
+  const targetPanel = document.getElementById('r-target-panel');
+  const targetInfo  = document.getElementById('r-target-info');
+
+  if(!targetVal || targetVal <= 0) {
+    targetPanel.style.display = 'none';
+    return;
+  }
+
+  targetPanel.style.display = 'block';
+
+  const fatTarget     = targetVal * qtd;
+  const cLiqTotT      = custoLiq * qtd;
+  const impostosT     = fatTarget*(imp.pis/100) + fatTarget*(imp.cofins/100)
+                      + fatTarget*(imp.irpj/100) + fatTarget*(imp.csll/100)
+                      + fatTarget*(icms/100)     + fatTarget*(imp.custoFixo/100);
+  const MARGEM_MINIMA = 5; // margem mínima absoluta — abaixo disso inviável mesmo zerado
+
+  // Comissão com % configurada
+  const vComT0        = fatTarget * (com/100);
+  const saldoT0       = fatTarget - cLiqTotT - impostosT - vComT0;
+  const margemT0      = (saldoT0 / fatTarget) * 100;
+
+  // Comissão necessária para manter margem do cadastro
+  const comNecessaria = ((fatTarget - cLiqTotT - impostosT - fatTarget*(imp.margem/100)) / fatTarget) * 100;
+
+  // Margem com comissão zero
+  const saldo0   = fatTarget - cLiqTotT - impostosT;
+  const margem0  = (saldo0 / fatTarget) * 100;
+
+  const isSuper  = currentUser.perfil==='admin' || currentUser.perfil==='supervisor';
+  const inviavel = margem0 < MARGEM_MINIMA;
+
+  // ── Cabeçalho: sempre mostra valor target e faturamento
+  let html = '<div class="result-row">'
+    + '<span class="rn">Preço target / peça</span>'
+    + '<span class="rv" style="font-size:16px;font-weight:700;color:var(--accent)">'+fmt(targetVal)+'</span>'
+    + '</div>'
+    + '<div class="result-row">'
+    + '<span class="rn">Faturamento target</span>'
+    + '<span class="rv">'+fmt(fatTarget)+'</span>'
+    + '</div>';
+
+  if (inviavel) {
+    // INVIÁVEL mesmo zerando comissão
+    html += '<div class="inline-alert" style="margin-top:.75rem;background:var(--red-dim);border:1px solid rgba(220,38,38,0.25);color:var(--red)">'
+      + '<strong>&#10007; Venda inviável.</strong> Mesmo com comissão zero a margem seria insuficiente ('+margem0.toFixed(2)+'%). '
+      + 'Não é possível praticar este preço.</div>';
+    if (!isVendedor) {
+      html += '<div class="result-row" style="margin-top:.5rem"><span class="rn">Comissão no target (R$)</span><span class="rv" style="color:var(--red)">R$ 0,00</span></div>'
+        + '<div class="result-row"><span class="rn">Comissão no target (%)</span><span class="rv" style="color:var(--red)">0%</span></div>';
+    }
+
+  } else if (margemT0 >= imp.margem) {
+    // VIÁVEL com comissão normal
+    html += '<div class="result-row">'
+      + '<span class="rn">Comissão no target (%)</span>'
+      + '<span class="rv" style="color:var(--blue);font-weight:600">'+com+'%</span>'
+      + '</div>'
+      + '<div class="result-row">'
+      + '<span class="rn">Comissão no target (R$)</span>'
+      + '<span class="rv" style="color:var(--blue);font-size:16px;font-weight:700">'+fmt(vComT0)+'</span>'
+      + '</div>'
+      + '<div class="inline-alert ok" style="margin-top:.75rem">&#10003; Target viável com comissão integral de '+com+'%.</div>';
+
+  } else if (comNecessaria >= 0) {
+    // VIÁVEL reduzindo comissão
+    const vComNecBRL = fatTarget * (comNecessaria/100);
+    html += '<div class="result-row">'
+      + '<span class="rn">Comissão no target (%)</span>'
+      + '<span class="rv" style="color:var(--amber);font-weight:600">'+comNecessaria.toFixed(2)+'%'
+      + ' <span style="font-size:11px;color:var(--text3)">(era '+com+'%)</span></span>'
+      + '</div>'
+      + '<div class="result-row">'
+      + '<span class="rn">Comissão no target (R$)</span>'
+      + '<span class="rv" style="color:var(--amber);font-size:16px;font-weight:700">'+fmt(vComNecBRL)+'</span>'
+      + '</div>'
+      + '<div class="inline-alert warn" style="margin-top:.75rem">&#9888; Target possível reduzindo sua comissão de '+com+'% ('+fmt(vComT0)+') para '+comNecessaria.toFixed(2)+'% ('+fmt(vComNecBRL)+').</div>';
+
+  } else {
+    // VIÁVEL só zerado — precisa autorização
+    html += '<div class="result-row">'
+      + '<span class="rn">Comissão no target (%)</span>'
+      + '<span class="rv" style="color:var(--red)">0%</span>'
+      + '</div>'
+      + '<div class="result-row">'
+      + '<span class="rn">Comissão no target (R$)</span>'
+      + '<span class="rv" style="color:var(--red);font-size:16px;font-weight:700">R$ 0,00</span>'
+      + '</div>'
+      + '<div class="inline-alert" style="margin-top:.75rem;background:var(--red-dim);border:1px solid rgba(220,38,38,0.25);color:var(--red)">&#9888; Comissão zero — necessário autorização do supervisor.</div>';
+    if (isSuper) {
+      html += '<div class="inline-alert info" style="margin-top:.5rem">Você é '+currentUser.perfil+' — pode autorizar este preço.</div>';
+    } else {
+      html += '<div style="margin-top:.75rem">'
+        + '<button class="btn" id="btn-solicitar-auth" style="width:100%;justify-content:center;border-color:rgba(217,119,6,0.4);color:var(--amber)" onclick="solicitarAutorizacao('+targetVal+','+margem0.toFixed(2)+')">&#9873; Solicitar autorização ao supervisor</button>'
+        + '</div>';
+    }
+  }
+
+  targetInfo.innerHTML = html;
+}
+
+
+function solicitarAutorizacao(target, margem) {
+  const sel = document.getElementById('c-produto');
+  const prod = sel?.options[sel?.selectedIndex]?.text || '—';
+  addActivity(currentUser.nome + ' solicitou autorização: target R$' + target.toFixed(2) + '/peça (margem ' + margem + '%) — ' + prod);
+  showToast('Solicitação registrada no log de atividades!', 'success');
+  const btn = document.getElementById('btn-solicitar-auth');
+  if(btn) { btn.disabled=true; btn.textContent='✓ Solicitação enviada'; }
+}
+
+
+// ═══════════════════════════════════
+// PRODUTOS
+// ═══════════════════════════════════
+
+function renderClientes() {
+  if(!DB.clientes) DB.clientes = [];
+  const tbody = document.getElementById('clientes-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = DB.clientes.map(c => {
+    return '<tr>'
+      + '<td style="font-weight:500">'+c.nome+'</td>'
+      + '<td class="muted">'+( c.cnpj||'—')+'</td>'
+      + '<td class="muted">'+( c.fone||'—')+'</td>'
+      + '<td class="muted">'+( c.email||'—')+'</td>'
+      + '<td class="muted">'+( c.cidade||'—')+'</td>'
+      + '<td class="muted">'+( c.uf||'—')+'</td>'
+      + '<td><div class="btn-row">'
+      + '<button class="btn btn-sm" onclick="abrirModalCliente('+c.id+')">Editar</button>'
+      + '<button class="btn btn-sm btn-danger" onclick="deletarCliente('+c.id+')">x</button>'
+      + '</div></td>'
+      + '</tr>';
+  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:1.5rem">Nenhum cliente cadastrado</td></tr>';
+}
+
+function deletarCliente(id) {
+  const c = DB.clientes.find(x=>x.id===id);
+  if(!confirm('Remover cliente "'+c.nome+'"?')) return;
+  DB.clientes = DB.clientes.filter(x=>x.id!==id);
+  saveData();
+  renderClientes();
+  showToast('Cliente removido.', 'success');
+}
+
+function renderProdutos() {
+  const q = document.getElementById('prod-search').value.toLowerCase();
+  const list = DB.produtos.filter(p =>
+    !q || p.nome.toLowerCase().includes(q) || p.fab.toLowerCase().includes(q) || p.form.toLowerCase().includes(q) || p.ref.toLowerCase().includes(q)
+  );
+  const canEdit = currentUser.perms.produtos || currentUser.perfil === 'supervisor' || currentUser.perfil === 'admin';
+  const tbody = document.getElementById('prod-tbody');
+  tbody.innerHTML = list.map(p=>{
+    const btns = canEdit
+      ? '<div class="btn-row"><button class="btn btn-sm" onclick="abrirModalProd('+p.id+')">Editar</button><button class="btn btn-sm btn-danger" onclick="deletarProd('+p.id+')">x</button></div>'
+      : '<span style="color:var(--text3);font-size:12px">—</span>';
+    const moedaBadge = p.moeda==='BRL'
+      ? '<span class="badge amber">R$</span>'
+      : '<span class="badge blue">US$</span>';
+    const usdVal  = p.moeda==='BRL' ? '—' : '$'+p.usd.toFixed(4);
+    const cotVal  = p.moeda==='BRL' ? '—' : 'R$'+(p.cotacao||DB.impostos.dolar).toFixed(2);
+    return '<tr>'
+      + '<td>'+p.nome+'</td>'
+      + '<td class="muted">'+p.fab+'</td>'
+      + '<td><span class="badge accent">'+p.form+'</span></td>'
+      + '<td class="muted">'+p.tubete+'</td>'
+      + '<td>'+moedaBadge+'</td>'
+      + '<td class="mono">'+usdVal+'</td>'
+      + '<td class="mono" style="font-size:12px">'+cotVal+'</td>'
+      + '<td class="mono" style="color:var(--accent)">R$'+p.brl.toFixed(2)+'</td>'
+      + '<td class="muted" style="font-size:12px">'+p.ref+'</td>'
+      + '<td>'+btns+'</td>'
+      + '</tr>';
+  }).join('');
+  document.getElementById('prod-count').textContent = list.length + ' produto(s) encontrado(s)';
+}
+
+function abrirModalProd(id) {
+  editingProdId = id;
+  const m = document.getElementById('modal-prod');
+  document.getElementById('modal-prod-title').textContent = id ? 'Editar produto' : 'Novo produto';
+  if(id) {
+    const p = DB.produtos.find(x=>x.id===id);
+    document.getElementById('mp-nome').value = p.nome;
+    document.getElementById('mp-fab').value = p.fab;
+    document.getElementById('mp-form').value = p.form;
+    document.getElementById('mp-tubete').value = p.tubete;
+    document.getElementById('mp-ref').value = p.ref;
+    document.getElementById('mp-obs').value = p.obs||'';
+    atualizarMoedaProd();
+    const isMaster = p.fab.toLowerCase().includes('mastercorp');
+    if(isMaster) {
+      document.getElementById('mp-brl').value = p.brl.toFixed(2);
+    } else {
+      document.getElementById('mp-usd').value = p.usd;
+      document.getElementById('mp-cotacao').value = p.cotacao || DB.impostos.dolar;
+      calcRealProd();
+    }
+  } else {
+    ['mp-nome','mp-fab','mp-form','mp-tubete','mp-ref','mp-obs'].forEach(i=>document.getElementById(i).value='');
+    atualizarMoedaProd();
+  }
+  m.classList.add('open');
+}
+
+function atualizarMoedaProd() {
+  const fab = (document.getElementById('mp-fab').value||'').toLowerCase();
+  const isMaster = fab.includes('mastercorp');
+  const bloco = document.getElementById('mp-preco-bloco');
+  if(isMaster) {
+    bloco.innerHTML = '<div class="inline-alert info" style="margin-bottom:10px"><strong>Mastercorp</strong> — preço informado diretamente em R$ pelo fornecedor.</div>'
+      + '<div class="form-grid cols2">'
+      + '<div class="field"><label>R$/m² (informado pelo fornecedor)</label><input type="number" id="mp-brl" step="0.01" placeholder="Ex: 0.38" /></div>'
+      + '<div class="field"><label>US$/m² (opcional)</label><input type="number" id="mp-usd" step="0.001" placeholder="Referência" /></div>'
+      + '</div>';
+  } else {
+    bloco.innerHTML = '<div class="inline-alert info" style="margin-bottom:10px">Preço em <strong>dólar</strong> — informe a cotação específica deste fornecedor.</div>'
+      + '<div class="form-grid cols3">'
+      + '<div class="field"><label>US$/m²</label><input type="number" id="mp-usd" step="0.001" placeholder="Ex: 0.0790" oninput="calcRealProd()" /></div>'
+      + '<div class="field"><label>Cotação do dólar (R$)</label><input type="number" id="mp-cotacao" step="0.01" placeholder="Ex: 5.30" oninput="calcRealProd()" value="' + DB.impostos.dolar + '" /></div>'
+      + '<div class="field"><label>R$/m² (calculado)</label><input type="number" id="mp-brl" step="0.01" placeholder="Auto" readonly style="background:var(--bg4);color:var(--accent)" /></div>'
+      + '</div>';
+  }
+}
+
+function calcRealProd() {
+  const usd = parseFloat(document.getElementById('mp-usd')?.value)||0;
+  const cotacao = parseFloat(document.getElementById('mp-cotacao')?.value)||DB.impostos.dolar;
+  const brlEl = document.getElementById('mp-brl');
+  if(brlEl && usd && cotacao) brlEl.value = (usd * cotacao).toFixed(4);
+}
+
+function salvarProd() {
+  const fab = document.getElementById('mp-fab').value.trim();
+  const isMaster = fab.toLowerCase().includes('mastercorp');
+  const cotacao = parseFloat(document.getElementById('mp-cotacao')?.value)||DB.impostos.dolar;
+  const p = {
+    nome: document.getElementById('mp-nome').value.trim(),
+    fab: fab,
+    form: document.getElementById('mp-form').value.trim(),
+    tubete: document.getElementById('mp-tubete').value.trim(),
+    ref: document.getElementById('mp-ref').value.trim(),
+    usd: parseFloat(document.getElementById('mp-usd')?.value)||0,
+    brl: parseFloat(document.getElementById('mp-brl').value)||0,
+    cotacao: isMaster ? null : cotacao,
+    moeda: isMaster ? 'BRL' : 'USD',
+    obs: document.getElementById('mp-obs').value.trim(),
+  };
+  if(!p.nome||!p.fab||!p.form) { showToast('Preencha nome, fabricante e formulação.','error'); return; }
+  if(editingProdId) {
+    const idx = DB.produtos.findIndex(x=>x.id===editingProdId);
+    DB.produtos[idx] = {...DB.produtos[idx],...p};
+    addActivity('Produto "'+p.nome+'" atualizado');
+    showToast('Produto atualizado!','success');
+  } else {
+    p.id = DB.nextId.produto++;
+    DB.produtos.push(p);
+    addActivity('Produto "'+p.nome+'" adicionado');
+    showToast('Produto adicionado!','success');
+  }
+  saveData();
+  fecharModal('modal-prod');
+  renderProdutos();
+  calcPopularFiltros();
+}
+
+function deletarProd(id) {
+  const p = DB.produtos.find(x=>x.id===id);
+  if(!confirm('Remover "'+p.nome+'"?')) return;
+  DB.produtos = DB.produtos.filter(x=>x.id!==id);
+  addActivity('Produto "'+p.nome+'" removido');
+  saveData();
+  renderProdutos();
+  calcPopularFiltros();
+  showToast('Produto removido.','success');
+}
+
+// ═══════════════════════════════════
+// IMPOSTOS
+// ═══════════════════════════════════
+
+function loadImpostos() {
+  const imp = DB.impostos;
+  document.getElementById('imp-pis-compra').value = imp.pisCompra;
+  document.getElementById('imp-cofins-compra').value = imp.cofinsCompra;
+  document.getElementById('imp-icms-compra').value = imp.icmsCompra;
+  document.getElementById('imp-pis').value = imp.pis;
+  document.getElementById('imp-cofins').value = imp.cofins;
+  document.getElementById('imp-irpj').value = imp.irpj;
+  document.getElementById('imp-csll').value = imp.csll;
+  document.getElementById('imp-frete-compra').value = imp.freteCompra;
+  document.getElementById('imp-custo-fixo').value = imp.custoFixo;
+  document.getElementById('imp-margem').value = imp.margem;
+  document.getElementById('imp-dolar').value = imp.dolar;
+  renderTiposVenda();
+}
+
+function saveImpostos() {
+  DB.impostos.pisCompra = parseFloat(document.getElementById('imp-pis-compra').value)||0;
+  DB.impostos.cofinsCompra = parseFloat(document.getElementById('imp-cofins-compra').value)||0;
+  DB.impostos.icmsCompra = parseFloat(document.getElementById('imp-icms-compra').value)||0;
+  DB.impostos.pis = parseFloat(document.getElementById('imp-pis').value)||0;
+  DB.impostos.cofins = parseFloat(document.getElementById('imp-cofins').value)||0;
+  DB.impostos.irpj = parseFloat(document.getElementById('imp-irpj').value)||0;
+  DB.impostos.csll = parseFloat(document.getElementById('imp-csll').value)||0;
+  DB.impostos.freteCompra = parseFloat(document.getElementById('imp-frete-compra').value)||0;
+  DB.impostos.custoFixo = parseFloat(document.getElementById('imp-custo-fixo').value)||0;
+  DB.impostos.margem = parseFloat(document.getElementById('imp-margem').value)||0;
+  DB.impostos.dolar = parseFloat(document.getElementById('imp-dolar').value)||0;
+  saveData();
+  const el = document.getElementById('imp-saved');
+  el.style.display='block';
+  setTimeout(()=>el.style.display='none',2500);
+}
+
+function renderTiposVenda() {
+  const cont = document.getElementById('tipos-venda');
+  cont.innerHTML = DB.impostos.tiposVenda.map((t,i)=>
+    '<div style="display:flex;align-items:center;gap:4px">'
+    + '<span class="badge accent">'+t+'</span>'
+    + '<button class="btn btn-sm btn-danger" onclick="removerTipo('+i+')" style="padding:2px 6px;font-size:11px">x</button>'
+    + '</div>'
+  ).join('');
+}
+
+function adicionarTipo() {
+  const v = document.getElementById('novo-tipo').value.trim().toUpperCase();
+  if(!v) return;
+  DB.impostos.tiposVenda.push(v);
+  document.getElementById('novo-tipo').value='';
+  saveData();
+  renderTiposVenda();
+  showToast('Tipo adicionado!','success');
+}
+
+function removerTipo(i) {
+  DB.impostos.tiposVenda.splice(i,1);
+  saveData();
+  renderTiposVenda();
+}
+
+// ═══════════════════════════════════
+// FRETES
+// ═══════════════════════════════════
+
+function renderFretes() {
+  const q = document.getElementById('frete-search').value.toLowerCase();
+  const list = DB.fretes.filter(f=>!q||f.cidade.toLowerCase().includes(q)||f.transp.toLowerCase().includes(q));
+  const canEdit = currentUser.perms.fretes;
+  document.getElementById('frete-tbody').innerHTML = list.map(f=>{
+    const btns = canEdit
+      ? '<div class="btn-row"><button class="btn btn-sm" onclick="abrirModalFrete('+f.id+')">Editar</button><button class="btn btn-sm btn-danger" onclick="deletarFrete('+f.id+')">x</button></div>'
+      : '<span style="color:var(--text3);font-size:12px">—</span>';
+    return '<tr>'
+      + '<td style="font-weight:500">'+f.cidade+'</td>'
+      + '<td class="mono" style="color:var(--accent)">'+fmt(f.valor)+'</td>'
+      + '<td class="mono">'+fmt(f.minFat)+'</td>'
+      + '<td class="muted" style="font-size:12px">'+f.transp+'</td>'
+      + '<td>'+btns+'</td>'
+      + '</tr>';
+  }).join('');
+  document.getElementById('frete-count').textContent = list.length + ' cidade(s) cadastrada(s)';
+}
+
+function abrirModalFrete(id) {
+  editingFreteId = id;
+  document.getElementById('modal-frete-title').textContent = id ? 'Editar cidade' : 'Nova cidade';
+  if(id) {
+    const f = DB.fretes.find(x=>x.id===id);
+    document.getElementById('mf-cidade').value = f.cidade;
+    document.getElementById('mf-valor').value = f.valor;
+    document.getElementById('mf-minfat').value = f.minFat;
+    document.getElementById('mf-transp').value = f.transp;
+  } else {
+    ['mf-cidade','mf-transp'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('mf-valor').value='';
+    document.getElementById('mf-minfat').value='';
+  }
+  document.getElementById('modal-frete').classList.add('open');
+}
+
+function salvarFrete() {
+  const f = {
+    cidade: document.getElementById('mf-cidade').value.trim().toUpperCase(),
+    valor: parseFloat(document.getElementById('mf-valor').value)||0,
+    minFat: parseFloat(document.getElementById('mf-minfat').value)||0,
+    transp: document.getElementById('mf-transp').value.trim(),
+  };
+  if(!f.cidade) { showToast('Informe o nome da cidade.','error'); return; }
+  if(editingFreteId) {
+    const idx = DB.fretes.findIndex(x=>x.id===editingFreteId);
+    DB.fretes[idx] = {...DB.fretes[idx],...f};
+    addActivity('Frete "'+f.cidade+'" atualizado');
+    showToast('Frete atualizado!','success');
+  } else {
+    f.id = DB.nextId.frete++;
+    DB.fretes.push(f);
+    addActivity('Cidade "'+f.cidade+'" adicionada');
+    showToast('Cidade adicionada!','success');
+  }
+  saveData();
+  fecharModal('modal-frete');
+  renderFretes();
+  calcPopularCidades();
+}
+
+function deletarFrete(id) {
+  const f = DB.fretes.find(x=>x.id===id);
+  if(!confirm('Remover "'+f.cidade+'"?')) return;
+  DB.fretes = DB.fretes.filter(x=>x.id!==id);
+  addActivity('Cidade "'+f.cidade+'" removida');
+  saveData();
+  renderFretes();
+  calcPopularCidades();
+  showToast('Removido.','success');
+}
+
+// ═══════════════════════════════════
+// USUÁRIOS
+// ═══════════════════════════════════
+
+function renderUsuarios() {
+  const perms = ['calculo','produtos','impostos','fretes','usuarios'];
+  const permLabels = ['Cálculo','Itens','Impostos','Fretes','Usuários'];
+  const roles = {admin:'Administrador',supervisor:'Supervisor',vendedor:'Vendedor'};
+  const roleColors = {admin:'red',supervisor:'amber',vendedor:'blue'};
+  document.getElementById('user-tbody').innerHTML = DB.usuarios.map(u=>{
+    const permCells = perms.map(p=>'<td><span class="badge '+(u.perms[p]?'green':'red')+'">'+(u.perms[p]?'✓':'✗')+'</span></td>').join('');
+    const delBtn = u.id!==currentUser.id ? '<button class="btn btn-sm btn-danger" onclick="deletarUser('+u.id+')">×</button>' : '';
+    return '<tr>'
+      + '<td style="font-weight:500">'+u.nome+'</td>'
+      + '<td class="mono" style="font-size:12px">'+u.login+'</td>'
+      + '<td><span class="badge '+(roleColors[u.perfil]||'blue')+'">'+(roles[u.perfil]||u.perfil)+'</span></td>'
+      + permCells
+      + '<td><div class="btn-row"><button class="btn btn-sm" onclick="abrirModalUser('+u.id+')">Editar</button>'+delBtn+'</div></td>'
+      + '</tr>';
+  }).join('');
+}
+
+function abrirModalUser(id) {
+  editingUserId = id;
+  document.getElementById('modal-user-title').textContent = id ? 'Editar usuário' : 'Novo usuário';
+  if(id) {
+    const u = DB.usuarios.find(x=>x.id===id);
+    document.getElementById('mu-nome').value = u.nome;
+    document.getElementById('mu-login').value = u.login;
+    document.getElementById('mu-senha').value = u.senha;
+    document.getElementById('mu-perfil').value = u.perfil;
+    ['calculo','produtos','impostos','fretes','usuarios'].forEach(p=>{
+      document.getElementById('perm-'+p).checked = u.perms[p];
+    });
+  } else {
+    ['mu-nome','mu-login','mu-senha'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('mu-perfil').value='vendedor';
+    ['calculo','produtos','impostos','fretes','usuarios'].forEach(p=>{
+      document.getElementById('perm-'+p).checked = false;
+    });
+    document.getElementById('perm-calculo').checked = true;
+  }
+  document.getElementById('modal-user').classList.add('open');
+}
+
+function perfilChange() {
+  const p = document.getElementById('mu-perfil').value;
+  const all = p==='admin';
+  ['calculo','produtos','impostos','fretes','usuarios'].forEach(perm=>{
+    document.getElementById('perm-'+perm).checked = all || (p==='supervisor' && perm!=='usuarios') || (p==='vendedor' && perm==='calculo');
+  });
+}
+
+function salvarUser() {
+  const nome = document.getElementById('mu-nome').value.trim();
+  const login = document.getElementById('mu-login').value.trim();
+  const senha = document.getElementById('mu-senha').value;
+  const perfil = document.getElementById('mu-perfil').value;
+  if(!nome||!login||!senha) { showToast('Preencha todos os campos.','error'); return; }
+  const perms = {};
+  ['calculo','produtos','impostos','fretes','usuarios'].forEach(p=>{
+    perms[p] = document.getElementById('perm-'+p).checked;
+  });
+  if(editingUserId) {
+    const idx = DB.usuarios.findIndex(x=>x.id===editingUserId);
+    DB.usuarios[idx] = {...DB.usuarios[idx],nome,login,senha,perfil,perms};
+    if(currentUser.id===editingUserId) { currentUser = DB.usuarios[idx]; initApp(); }
+    addActivity('Usuário "'+nome+'" atualizado');
+    showToast('Usuário atualizado!','success');
+  } else {
+    const existente = DB.usuarios.find(u=>u.login===login);
+    if(existente) { showToast('Login já cadastrado.','error'); return; }
+    const u = {id:DB.nextId.usuario++,nome,login,senha,perfil,perms};
+    DB.usuarios.push(u);
+    addActivity('Usuário "'+nome+'" criado');
+    showToast('Usuário criado!','success');
+  }
+  saveData();
+  fecharModal('modal-user');
+  renderUsuarios();
+}
+
+function deletarUser(id) {
+  const u = DB.usuarios.find(x=>x.id===id);
+  if(!confirm('Remover usuário "'+u.nome+'"?')) return;
+  DB.usuarios = DB.usuarios.filter(x=>x.id!==id);
+  addActivity('Usuário "'+u.nome+'" removido');
+  saveData();
+  renderUsuarios();
+  showToast('Usuário removido.','success');
+}
+
+// ═══════════════════════════════════
+// UTILS
+// ═══════════════════════════════════
+
+function fecharModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = (type==='success'?'✓ ':'✗ ') + msg;
+  t.className = 'toast '+type+' show';
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+
+function fecharOverlay() {
+  const el = document.getElementById('rp-overlay');
+  if(el) el.remove();
+}
+
+// ═══════════════════════════════════
+// CARRINHO
+// ═══════════════════════════════════
+
+let carrinho = [];
+let calcAtual = null; // snapshot do cálculo atual
+
+function atualizarBadgeCarrinho() {
+  const badge = document.getElementById('cart-badge');
+  if(!badge) return;
+  if(carrinho.length > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = carrinho.length;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function addCarrinho(tipo) {
+  if(!calcAtual) return;
+  const item = {
+    id: Date.now(),
+    produto: calcAtual.nomeProduto,
+    largura: calcAtual.largura,
+    comprimento: calcAtual.comprimento,
+    qtd: calcAtual.qtd,
+    tipo: tipo,
+    preco: tipo==='fob' ? calcAtual.pvFob : tipo==='cif' ? calcAtual.pvCif : calcAtual.targetVal,
+    precoLabel: tipo==='fob' ? 'FOB' : tipo==='cif' ? 'CIF' : 'Target',
+    total: (tipo==='fob' ? calcAtual.pvFob : tipo==='cif' ? calcAtual.pvCif : calcAtual.targetVal) * calcAtual.qtd,
+    comissao: calcAtual.comissao,
+    comissaoRS: calcAtual.vComissao,
+    tipoVenda: calcAtual.tipoVenda,
+  };
+  carrinho.push(item);
+  atualizarBadgeCarrinho();
+  showToast('Item adicionado ao carrinho!', 'success');
+  addActivity(currentUser.nome + ' adicionou "' + item.produto + '" ao carrinho ('+item.precoLabel+')');
+
+  // Perguntar se deseja calcular novo item
+  setTimeout(() => perguntarNovoItem(), 400);
+}
+
+function perguntarNovoItem() {
+  fecharOverlay();
+  const ov = document.createElement('div');
+  ov.id = 'rp-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;max-width:360px;width:90%;text-align:center;box-shadow:var(--shadow-lg)';
+  const msg = document.createElement('div');
+  msg.innerHTML = '<div style="font-size:16px;font-weight:600;margin-bottom:.5rem">Item adicionado!</div><div style="font-size:13px;color:var(--text2);margin-bottom:1.5rem">Deseja calcular outro item?</div>';
+  const btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:8px;justify-content:center';
+  const b1 = document.createElement('button');
+  b1.className = 'btn btn-accent';
+  b1.textContent = '+ Calcular novo item';
+  b1.onclick = function(){ fecharOverlay(); calcNovoItem(); };
+  const b2 = document.createElement('button');
+  b2.className = 'btn';
+  b2.textContent = 'Nao, ver proposta';
+  b2.onclick = function(){ fecharOverlay(); perguntarEmitirProposta(); };
+  btns.appendChild(b1); btns.appendChild(b2);
+  box.appendChild(msg); box.appendChild(btns);
+  ov.appendChild(box); document.body.appendChild(ov);
+}
+
+function calcNovoItem() {
+  // Limpar campos de produto e resultado
+  document.getElementById('c-vm2').value = '';
+  document.getElementById('c-largura').value = '110';
+  document.getElementById('c-compr').value = '450';
+  document.getElementById('c-qtd').value = '144';
+  document.getElementById('c-target').value = '';
+  document.getElementById('calc-result').style.display = 'none';
+  document.getElementById('r-add-cart').style.display = 'none';
+  calcAtual = null;
+  goPage('calculo');
+  window.scrollTo(0,0);
+}
+
+function perguntarEmitirProposta() {
+  fecharOverlay();
+  const ov = document.createElement('div');
+  ov.id = 'rp-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;max-width:360px;width:90%;text-align:center;box-shadow:var(--shadow-lg)';
+  const msg = document.createElement('div');
+  msg.innerHTML = '<div style="font-size:16px;font-weight:600;margin-bottom:.5rem">Emitir proposta?</div><div style="font-size:13px;color:var(--text2);margin-bottom:1.5rem">Voce tem ' + carrinho.length + ' item(s) no carrinho.</div>';
+  const btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:8px;justify-content:center';
+  const b3 = document.createElement('button');
+  b3.className = 'btn btn-accent';
+  b3.textContent = 'Emitir proposta';
+  b3.onclick = function(){ fecharOverlay(); abrirModalProposta(); };
+  const b4 = document.createElement('button');
+  b4.className = 'btn';
+  b4.textContent = 'Continuar mais tarde';
+  b4.onclick = function(){ fecharOverlay(); };
+  btns.appendChild(b3); btns.appendChild(b4);
+  box.appendChild(msg); box.appendChild(btns);
+  ov.appendChild(box); document.body.appendChild(ov);
+}
+
+function limparCarrinho() {
+  if(!confirm('Limpar todos os itens do carrinho?')) return;
+  carrinho = [];
+  calcAtual = null;
+  atualizarBadgeCarrinho();
+  renderCarrinho();
+}
+
+function removerItemCarrinho(id) {
+  carrinho = carrinho.filter(i=>i.id!==id);
+  atualizarBadgeCarrinho();
+  renderCarrinho();
+}
+
+function abrirCarrinho() {
+  renderCarrinho();
+  document.getElementById('modal-carrinho').classList.add('open');
+}
+
+function renderCarrinho() {
+  const lista = document.getElementById('cart-lista');
+  const totalEl = document.getElementById('cart-total');
+  if(!lista) return;
+  if(carrinho.length===0) {
+    lista.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:1.5rem 0;text-align:center">Carrinho vazio</div>';
+    if(totalEl) totalEl.textContent = 'R$ 0,00';
+    return;
+  }
+  let total = 0;
+  lista.innerHTML = carrinho.map((item,i) => {
+    total += item.total;
+    return '<div class="cart-item-row">'
+      + '<div style="width:24px;text-align:center;color:var(--text3);font-size:12px">'+(i+1)+'</div>'
+      + '<div class="cart-item-desc">'
+      + '<div style="font-weight:500;font-size:13px">'+item.produto+'</div>'
+      + '<div style="font-size:11px;color:var(--text3)">'+item.largura+'mm × '+item.comprimento+'m | Qtd: '+item.qtd+' | '+item.tipoVenda+'</div>'
+      + '<div style="font-size:11px;color:var(--text3)">Comissão: '+item.comissao+'% ('+fmt(item.comissaoRS)+')</div>'
+      + '</div>'
+      + '<div style="text-align:right">'
+      + '<div class="cart-item-price">'+fmt(item.preco)+'/un</div>'
+      + '<div style="font-size:11px;color:var(--text3)">'+fmt(item.total)+' total</div>'
+      + '<div style="font-size:10px;background:var(--accent-dim);color:var(--accent);border-radius:4px;padding:1px 6px;display:inline-block;margin-top:2px">'+item.precoLabel+'</div>'
+      + '</div>'
+      + '<button class="btn btn-sm btn-danger" onclick="removerItemCarrinho('+item.id+')" style="padding:4px 8px">×</button>'
+      + '</div>';
+  }).join('');
+  if(totalEl) totalEl.textContent = fmt(total);
+}
+
+// ═══════════════════════════════════
+// CLIENTES
+// ═══════════════════════════════════
+
+let editingClienteId = null;
+
+function popularSelectClientes() {
+  const sel = document.getElementById('prop-cliente');
+  if(!sel) return;
+  if(!DB.clientes) DB.clientes = [];
+  sel.innerHTML = DB.clientes.map(c=>'<option value="'+c.id+'">'+c.nome+'</option>').join('');
+}
+
+function abrirModalCliente(id) {
+  editingClienteId = id;
+  document.getElementById('modal-cliente-title').textContent = id ? 'Editar cliente' : 'Novo cliente';
+  if(id) {
+    const c = DB.clientes.find(x=>x.id===id);
+    document.getElementById('mc-nome').value = c.nome||'';
+    document.getElementById('mc-cnpj').value = c.cnpj||'';
+    document.getElementById('mc-fone').value = c.fone||'';
+    document.getElementById('mc-email').value = c.email||'';
+    document.getElementById('mc-end').value = c.end||'';
+    document.getElementById('mc-cidade').value = c.cidade||'';
+    document.getElementById('mc-uf').value = c.uf||'SC';
+  } else {
+    ['mc-nome','mc-cnpj','mc-fone','mc-email','mc-end','mc-cidade'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('mc-uf').value = 'SC';
+  }
+  document.getElementById('modal-cliente').classList.add('open');
+}
+
+function salvarCliente() {
+  const c = {
+    nome:   document.getElementById('mc-nome').value.trim(),
+    cnpj:   document.getElementById('mc-cnpj').value.trim(),
+    fone:   document.getElementById('mc-fone').value.trim(),
+    email:  document.getElementById('mc-email').value.trim(),
+    end:    document.getElementById('mc-end').value.trim(),
+    cidade: document.getElementById('mc-cidade').value.trim(),
+    uf:     document.getElementById('mc-uf').value.trim(),
+  };
+  if(!c.nome) { showToast('Informe o nome do cliente.', 'error'); return; }
+  if(!DB.clientes) DB.clientes = [];
+  if(editingClienteId) {
+    const idx = DB.clientes.findIndex(x=>x.id===editingClienteId);
+    DB.clientes[idx] = {...DB.clientes[idx], ...c};
+  } else {
+    c.id = DB.nextId.cliente++;
+    DB.clientes.push(c);
+  }
+  saveData();
+  fecharModal('modal-cliente');
+  popularSelectClientes();
+  // Selecionar o novo cliente
+  const sel = document.getElementById('prop-cliente');
+  if(sel) sel.value = c.id || DB.clientes[DB.clientes.length-1].id;
+  showToast('Cliente salvo!', 'success');
+}
+
+// ═══════════════════════════════════
+// PROPOSTA
+// ═══════════════════════════════════
+
+function abrirModalProposta() {
+  if(carrinho.length === 0) { showToast('Adicione itens ao carrinho primeiro.', 'error'); return; }
+  if(!DB.clientes) DB.clientes = [];
+  popularSelectClientes();
+  document.getElementById('modal-proposta').classList.add('open');
+}
+
+function gerarPDF() {
+  const clienteId = parseInt(document.getElementById('prop-cliente').value);
+  const cliente = DB.clientes.find(c=>c.id===clienteId);
+  if(!cliente) { showToast('Selecione um cliente.', 'error'); return; }
+
+  const pagamento  = document.getElementById('prop-pagamento').value;
+  const prazo      = document.getElementById('prop-prazo').value;
+  const validade   = document.getElementById('prop-validade').value;
+  const repres     = document.getElementById('prop-representante').value;
+  const obs        = document.getElementById('prop-obs').value;
+
+  const numProp    = DB.nextId.proposta++;
+  const hoje       = new Date();
+  const dataStr    = hoje.toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'});
+
+  saveData();
+  addActivity(currentUser.nome + ' emitiu proposta #'+numProp+' para '+cliente.nome);
+
+  // Calcular total
+  let totalGeral = 0;
+  carrinho.forEach(i => totalGeral += i.total);
+
+  // Gerar linhas da tabela
+  const linhasItens = carrinho.map((item, i) => {
+    return '<tr>'
+      +'<td style="padding:10px 8px;border-bottom:1px solid #e0e0e0;font-size:12px;color:#333;vertical-align:top">'
+      +'<strong>'+(i+1).toString().padStart(5,'0')+'</strong>'+'</td>'
+      +'<td style="padding:10px 8px;border-bottom:1px solid #e0e0e0;font-size:12px;color:#333;vertical-align:top">'
+      +item.produto+'<br><span style="font-size:11px;color:#888">'+item.largura+'mm × '+item.comprimento+'m | '+item.tipoVenda+'</span>'+'</td>'
+      +'<td style="padding:10px 8px;border-bottom:1px solid #e0e0e0;font-size:12px;color:#333;text-align:center;vertical-align:top">'+item.qtd+',00 ( )</td>'
+      +'<td style="padding:10px 8px;border-bottom:1px solid #e0e0e0;font-size:12px;color:#333;text-align:center;vertical-align:top">Unidade</td>'
+      +'<td style="padding:10px 8px;border-bottom:1px solid #e0e0e0;font-size:12px;color:#333;text-align:right;vertical-align:top">R$&nbsp;'+item.preco.toFixed(4)+'</td>'
+      +'<td style="padding:10px 8px;border-bottom:1px solid #e0e0e0;font-size:12px;color:#333;text-align:right;vertical-align:top">R$&nbsp;'+item.total.toFixed(2).replace('.',',')+'</td>'
+      +'</tr>';
+  }).join('');
+
+  const obsLinhas = obs.split('\n').join('<br>');
+
+  const LOGO = 'data:image/png;base64,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';
+
+  const htmlPDF = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Proposta ${numProp}</title>
+<style>
+  @page { size: A4; margin: 15mm 15mm 20mm 15mm; }
+  body { font-family: Arial, sans-serif; font-size: 12px; color: #333; margin:0; padding:0; }
+  * { box-sizing: border-box; }
+  .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; border-bottom:2px solid #e0e0e0; padding-bottom:12px; }
+  .logo img { max-height:70px; max-width:220px; }
+  .empresa-info { text-align:right; font-size:11px; color:#555; line-height:1.6; }
+  .empresa-info strong { font-size:13px; color:#222; }
+  .proposta-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:16px; }
+  .data-local { font-size:12px; color:#555; }
+  .prop-num { font-size:13px; font-weight:bold; }
+  .cliente-box { background:#f8f8f8; border:1px solid #e0e0e0; border-radius:4px; padding:10px 14px; margin-bottom:16px; }
+  .cliente-box .label { font-size:10px; color:#888; text-transform:uppercase; letter-spacing:.05em; }
+  .cliente-box .nome { font-size:14px; font-weight:bold; color:#222; margin:2px 0 4px; }
+  .cliente-box .info { font-size:11px; color:#666; }
+  table { width:100%; border-collapse:collapse; margin-bottom:16px; }
+  thead th { background:#f0f0f0; padding:8px; font-size:11px; text-align:left; border-bottom:2px solid #ccc; color:#555; text-transform:uppercase; letter-spacing:.04em; }
+  .total-row td { padding:10px 8px; font-weight:bold; font-size:13px; border-top:2px solid #333; }
+  .rodape { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; font-size:11px; }
+  .rodape-item .label { color:#888; font-size:10px; text-transform:uppercase; letter-spacing:.04em; }
+  .rodape-item .valor { font-weight:bold; color:#222; margin-top:2px; }
+  .obs-box { background:#f8f8f8; border-left:3px solid #2563eb; padding:10px 14px; font-size:11px; color:#555; line-height:1.6; margin-bottom:20px; }
+  .obs-label { font-size:10px; color:#2563eb; font-weight:bold; text-transform:uppercase; margin-bottom:4px; }
+  .assinatura { display:flex; justify-content:flex-end; margin-top:24px; }
+  .assin-box { text-align:center; }
+  .assin-linha { border-top:1px solid #333; width:240px; margin-bottom:4px; padding-top:4px; font-size:11px; color:#555; }
+  .badge-tipo { display:inline-block; background:#e8f0fe; color:#2563eb; border-radius:3px; padding:1px 6px; font-size:10px; font-weight:bold; margin-left:4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><img src="${LOGO}" alt="Logo" /></div>
+  <div class="empresa-info">
+    <strong>Arte Soluções Gráficas Ltda</strong><br>
+    Rua Dr. Fritz Mueller, 1270 - Salto - Blumenau - SC<br>
+    CEP: 89031-620 - Fone: (0**47) 3323-9565<br>
+    CNPJ 05.079.758/0001-80 - IE 254.413.250
+  </div>
+</div>
+
+<div class="proposta-header">
+  <div class="data-local">Blumenau, ${dataStr}</div>
+  <div class="prop-num">Cod. Proposta &nbsp; ${numProp}</div>
+</div>
+
+<div style="font-size:11px;color:#555;margin-bottom:8px;">À</div>
+<div class="cliente-box">
+  <div class="label">Cliente</div>
+  <div class="nome">${cliente.nome}</div>
+  <div class="info">
+    ${cliente.cnpj && cliente.cnpj !== '—' ? 'CNPJ: ' + cliente.cnpj + '&nbsp;&nbsp;|&nbsp;&nbsp;' : ''}
+    ${cliente.fone ? 'Fone: ' + cliente.fone + '&nbsp;&nbsp;|&nbsp;&nbsp;' : ''}
+    ${cliente.cidade ? cliente.cidade + (cliente.uf ? ' - ' + cliente.uf : '') : ''}
+  </div>
+</div>
+
+<div style="font-size:12px;color:#555;margin-bottom:12px;">Temos o prazer de apresentar nossos preços conforme sua solicitação:</div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:55px">Orç.</th>
+      <th>Descrição</th>
+      <th style="width:90px;text-align:center">Qtde(s)</th>
+      <th style="width:70px;text-align:center">Unidade</th>
+      <th style="width:90px;text-align:right">Valor Unit.</th>
+      <th style="width:90px;text-align:right">Preço Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${linhasItens}
+  </tbody>
+  <tfoot>
+    <tr class="total-row">
+      <td colspan="5" style="text-align:right;padding:10px 8px">Total Geral</td>
+      <td style="text-align:right;padding:10px 8px;color:#2563eb">R$&nbsp;${totalGeral.toFixed(2).replace('.',',')}</td>
+    </tr>
+  </tfoot>
+</table>
+
+<div class="rodape">
+  <div class="rodape-item"><div class="label">Forma de pagamento</div><div class="valor">${pagamento}</div></div>
+  <div class="rodape-item"><div class="label">Prazo de entrega</div><div class="valor">${prazo}</div></div>
+  <div class="rodape-item"><div class="label">Validade</div><div class="valor">${validade}</div></div>
+  <div class="rodape-item"><div class="label">Representante</div><div class="valor">${repres}</div></div>
+</div>
+
+${obs ? '<div class="obs-box"><div class="obs-label">Observações</div>' + obsLinhas + '</div>' : ''}
+
+<div style="font-size:11px;color:#555;margin-top:8px">
+  Faturado por empresa optante do Lucro Real (fornece crédito integral de ICMS)
+</div>
+
+<div class="assinatura">
+  <div class="assin-box">
+    <div class="assin-linha">Atenciosamente,</div>
+    <div style="font-size:11px;color:#888">Arte Soluções Gráficas Ltda</div>
+  </div>
+</div>
+
+<div style="text-align:right;margin-top:24px">
+  <div style="display:inline-block;text-align:center">
+    <div style="border-top:1px solid #333;width:280px;padding-top:4px;font-size:11px;color:#555">
+      De acordo: ___________________ ___/___/_____.
+    </div>
+    <div style="font-size:10px;color:#888">Cliente - visto e data.</div>
+  </div>
+</div>
+
+
+</body>
+</html>`;
+
+  // Gerar download direto — funciona em desktop e mobile sem popup
+  fecharModal('modal-proposta');
+
+  // Criar blob e link de download
+  const blob = new Blob([htmlPDF], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'Proposta_' + numProp + '_' + cliente.nome.replace(/[^a-zA-Z0-9]/g,'_') + '.html';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+
+  showToast('Proposta #' + numProp + ' baixada! Abra o arquivo para imprimir/salvar PDF.', 'success');
+  addActivity(currentUser.nome + ' emitiu proposta #' + numProp + ' para ' + cliente.nome);
+  saveData();
+
+  // Perguntar sobre limpar carrinho
+  setTimeout(function() {
+    if(confirm('Proposta emitida! Deseja limpar o carrinho?')) {
+      carrinho = [];
+      atualizarBadgeCarrinho();
+    }
+  }, 1500);
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+});
+
+// ═══════════════════════════════════
+// AUTO-INIT — pula tela de login pois o Hub já autentica o usuário
+// ═══════════════════════════════════
+(function() {
+  const loginScreen = document.getElementById('login-screen');
+  const appEl = document.getElementById('app');
+  if(loginScreen) loginScreen.style.display = 'none';
+  if(appEl) appEl.style.display = 'block';
+  if(currentUser) initApp();
+})();
+
+</script>
+</body>
+</html>
