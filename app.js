@@ -1173,35 +1173,38 @@ const Clientes = {
       data[f] = el ? el.value.trim() : '';
     });
 
+    let savedCliente;
     if (Clientes._editId) {
       const idx = DB.clientes.findIndex(c => c.id === Clientes._editId);
       if (idx !== -1) {
         const oldDisplayName = DB.clientes[idx].fantasia || DB.clientes[idx].razao;
         const newDisplayName = data.fantasia || data.razao;
         DB.clientes[idx] = { ...DB.clientes[idx], ...data };
+        savedCliente = DB.clientes[idx];
         // Propagar alteração de nome em todos os módulos
         if (oldDisplayName !== newDisplayName) {
-          Clientes._propagateRename(Clientes._editId, oldDisplayName, newDisplayName);
+          Clientes._propagateRename(savedCliente.id, oldDisplayName, newDisplayName);
         }
       }
     } else {
-      DB.clientes.push({
-        id: 'CLI-' + Date.now(),
-        ...data,
-        criado_em: new Date().toISOString().split('T')[0],
-      });
+      savedCliente = { id: 'CLI-' + Date.now(), ...data, criado_em: new Date().toISOString().split('T')[0] };
+      DB.clientes.push(savedCliente);
     }
 
     renderClienteDatalist();
     Clientes.closeModal();
     Clientes.render();
+    // Persiste no Firestore em background (não bloqueia a UI)
+    if (savedCliente) Firebase.saveCliente(savedCliente).catch(console.error);
   },
 
   delete(id) {
     if (!confirm('Excluir cliente? Os registros históricos manterão o nome atual.')) return;
+    const cliente = DB.clientes.find(c => c.id === id);
     DB.clientes = DB.clientes.filter(c => c.id !== id);
     renderClienteDatalist();
     Clientes.render();
+    if (cliente) Firebase.deleteCliente(cliente).catch(console.error);
   },
 
   // Propaga rename para todos os arrays do DB
@@ -1215,6 +1218,10 @@ const Clientes = {
     update(DB.notas);
     update(DB.ordens);
     update(DB.orcamentos);
+    // Persiste nos orçamentos afetados no Firestore
+    DB.orcamentos.filter(o => o.cliente_id === id).forEach(o => {
+      Firebase.saveOrcamento(o).catch(console.error);
+    });
     // Re-render se a página atual usa clientes
     const p = App.currentPage;
     if (p === 'faturamento') Faturamento.render();
@@ -1387,14 +1394,16 @@ const Firebase = {
   async loadAll() {
     const db = firebase.firestore();
     try {
-      const [orcsSnap, modelosSnap, usuariosSnap] = await Firebase._withTimeout(Promise.all([
+      const [orcsSnap, modelosSnap, usuariosSnap, clientesSnap] = await Firebase._withTimeout(Promise.all([
         db.collection('orcamentos').orderBy('criado','desc').limit(300).get(),
         db.collection('modelos_produto').get(),
         db.collection('usuarios').get(),
+        db.collection('clientes').orderBy('razao').get(),
       ]));
       DB.orcamentos      = orcsSnap.docs.map(d => ({ _fid: d.id, ...d.data() }));
       DB.modelos_produto = modelosSnap.docs.map(d => ({ _fid: d.id, ...d.data() }));
       DB.usuarios        = usuariosSnap.docs.map(d => ({ _fid: d.id, ...d.data() }));
+      DB.clientes        = clientesSnap.docs.map(d => ({ _fid: d.id, ...d.data() }));
 
       // Semeia dados iniciais se coleções estão vazias
       if (DB.orcamentos.length === 0)      await Firebase._seed('orcamentos',      SEED_ORCAMENTOS);
@@ -1436,6 +1445,24 @@ const Firebase = {
     const db = firebase.firestore();
     const snap = await db.collection('orcamentos').where('id','==', orcId).limit(1).get();
     if (!snap.empty) await snap.docs[0].ref.update({ status });
+  },
+
+  async saveCliente(cliente) {
+    if (!Firebase.configured) return;
+    const db = firebase.firestore();
+    const { _fid, ...data } = cliente;
+    if (_fid) {
+      await db.collection('clientes').doc(_fid).set(data);
+    } else {
+      const ref = await db.collection('clientes').add(data);
+      cliente._fid = ref.id;
+    }
+  },
+
+  async deleteCliente(cliente) {
+    if (!Firebase.configured || !cliente._fid) return;
+    const db = firebase.firestore();
+    await db.collection('clientes').doc(cliente._fid).delete();
   },
 
   async saveModelo(modelo) {
