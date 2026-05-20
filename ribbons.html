@@ -2276,36 +2276,62 @@ document.addEventListener('keydown', e=>{
 
 // ═══════════════════════════════════
 // SINCRONIZA CLIENTES COM O HUB PAI
-// Chamado pelo Hub (App._injectClientesIntoRibbons) com a lista já convertida,
-// ou tenta buscar do parent como fallback quando aberto isoladamente.
+// Polling: verifica window.parent.DB.clientes a cada 500ms até encontrar
+// dados (máx 40 tentativas = 20 segundos). Também pode ser chamado
+// externamente pelo Hub via App._injectClientesIntoRibbons().
 // ═══════════════════════════════════
-(function syncClientesFromHub() {
-  try {
-    const hubClientes = window.parent && window.parent !== window && window.parent.DB && window.parent.DB.clientes;
-    if (!hubClientes || !hubClientes.length) return; // Hub vai injetar via _injectClientesIntoRibbons
+(function pollHubClientes() {
+  // Não está em iframe — nada a fazer
+  if (!window.parent || window.parent === window) return;
 
-    // Converte formato Hub → formato RibbonPrice
-    DB.clientes = hubClientes.map(c => ({
-      id:     c.id,
-      nome:   c.fantasia || c.razao,
-      cnpj:   c.cnpj    || '',
-      fone:   c.telefone || '',
-      email:  c.email   || '',
-      end:    '',
-      cidade: c.cidade  || '',
-      uf:     c.uf      || '',
-    }));
+  var tentativas = 0;
+  var MAX = 40; // 20 segundos
 
-    if (!DB.nextId) DB.nextId = {};
-    DB.nextId.cliente = hubClientes.length + 1;
+  function tentar() {
+    tentativas++;
+    try {
+      var hubDB = window.parent.DB;
+      var hubClientes = hubDB && hubDB.clientes;
 
-    const pg = document.querySelector('.page.active');
-    if (pg && pg.id === 'page-clientes') renderClientes();
+      if (hubClientes && hubClientes.length > 0) {
+        // ✅ Hub tem clientes — injeta no RibbonPrice
+        DB.clientes = hubClientes.map(function(c) {
+          return {
+            id:     c.id,
+            nome:   c.fantasia || c.razao || '',
+            cnpj:   c.cnpj     || '',
+            fone:   c.telefone || '',
+            email:  c.email    || '',
+            end:    '',
+            cidade: c.cidade   || '',
+            uf:     c.uf       || '',
+          };
+        });
+        if (!DB.nextId) DB.nextId = {};
+        DB.nextId.cliente = hubClientes.length + 1;
 
-  } catch(e) {
-    // Sem acesso ao pai (ex: aberto direto) — usa clientes locais
-    console.warn('[RibbonPrice] Hub pai não acessível:', e.message);
+        // Atualiza a UI se estiver na página de clientes
+        var pg = document.querySelector('.page.active');
+        if (pg && pg.id === 'page-clientes') renderClientes();
+        // Atualiza o datalist/select do modal de propostas
+        popularSelectClientes();
+
+        console.log('[RibbonPrice] ' + DB.clientes.length + ' clientes carregados do Hub (' + tentativas + ' tentativas)');
+        return; // Sucesso — para de tentar
+      }
+    } catch(e) {
+      // cross-origin ou erro — para silenciosamente
+      return;
+    }
+
+    if (tentativas < MAX) {
+      setTimeout(tentar, 500);
+    } else {
+      console.warn('[RibbonPrice] Hub não disponibilizou clientes em 20s — usando base local.');
+    }
   }
+
+  tentar();
 })();
 
 </script>
