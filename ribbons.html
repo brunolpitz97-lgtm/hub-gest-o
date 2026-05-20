@@ -975,6 +975,8 @@ function saveData() {
 }
 
 let DB = loadData();
+// Expõe DB na window para que o Hub pai consiga acessar via iframe.contentWindow.DB
+window.DB = DB;
 // Auto-login: autenticação é controlada pelo Hub Gestão pai
 let currentUser = DB.usuarios.find(u => u.perfil === 'admin') || DB.usuarios[0];
 let editingProdId = null;

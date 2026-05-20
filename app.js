@@ -17,6 +17,8 @@ const DB = {
   orcamentos: [],
   clientes: [],
 };
+// Expõe DB na window para acesso cross-frame (iframe ribbons faz window.parent.DB)
+window.DB = DB;
 
 // ===== CLIENTES — fonte única de dados =====
 function renderClienteDatalist() {
