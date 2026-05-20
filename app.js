@@ -1393,32 +1393,56 @@ const Firebase = {
 
   async loadAll() {
     const db = firebase.firestore();
+
+    // ── Clientes: carrega/semeia de forma independente (não bloqueia o resto) ──
+    Firebase._loadClientes(db).catch(e => console.warn('Clientes Firestore:', e.message));
+
     try {
-      const [orcsSnap, modelosSnap, usuariosSnap, clientesSnap] = await Firebase._withTimeout(Promise.all([
+      const [orcsSnap, modelosSnap, usuariosSnap] = await Firebase._withTimeout(Promise.all([
         db.collection('orcamentos').orderBy('criado','desc').limit(300).get(),
         db.collection('modelos_produto').get(),
         db.collection('usuarios').get(),
-        db.collection('clientes').orderBy('razao').get(),
       ]));
       DB.orcamentos      = orcsSnap.docs.map(d => ({ _fid: d.id, ...d.data() }));
       DB.modelos_produto = modelosSnap.docs.map(d => ({ _fid: d.id, ...d.data() }));
       DB.usuarios        = usuariosSnap.docs.map(d => ({ _fid: d.id, ...d.data() }));
-      DB.clientes        = clientesSnap.docs.map(d => ({ _fid: d.id, ...d.data() }));
 
       // Semeia dados iniciais se coleções estão vazias
       if (DB.orcamentos.length === 0)      await Firebase._seed('orcamentos',      SEED_ORCAMENTOS);
       if (DB.modelos_produto.length === 0) await Firebase._seed('modelos_produto', SEED_MODELOS);
       if (DB.usuarios.length === 0)        await Firebase._seed('usuarios',        SEED_USUARIOS);
-      // Semeia base de clientes (4434 registros) na primeira carga
-      if (DB.clientes.length === 0 && typeof SEED_CLIENTES !== 'undefined' && SEED_CLIENTES.length) {
-        await Firebase._seedClientes(SEED_CLIENTES);
-      }
     } catch(e) {
       console.error('Erro ao carregar Firestore:', e);
-      // Fallback para seed em caso de erro de permissão
       if (!DB.orcamentos.length)      DB.orcamentos      = SEED_ORCAMENTOS.map(o => ({...o}));
       if (!DB.modelos_produto.length) DB.modelos_produto = SEED_MODELOS.map(m => ({...m}));
       if (!DB.usuarios.length)        DB.usuarios        = SEED_USUARIOS.map(u => ({...u}));
+    }
+  },
+
+  // Carrega clientes do Firestore; se vazio, popula de SEED_CLIENTES imediatamente em memória
+  // e envia ao Firestore em background (não trava a UI)
+  async _loadClientes(db) {
+    // 1. Popula memória imediatamente com o seed (exibição instantânea)
+    if (DB.clientes.length === 0 && typeof SEED_CLIENTES !== 'undefined' && SEED_CLIENTES.length) {
+      DB.clientes = SEED_CLIENTES.map(c => ({ ...c }));
+      renderClienteDatalist();
+      if (App.currentPage === 'clientes') Clientes.render();
+    }
+
+    // 2. Tenta carregar do Firestore (coleção pode estar vazia na primeira vez)
+    const snap = await Firebase._withTimeout(db.collection('clientes').get(), 12000);
+    if (snap.docs.length > 0) {
+      // Firestore já tem dados — usa eles (mais recentes que o seed)
+      DB.clientes = snap.docs.map(d => ({ _fid: d.id, ...d.data() }));
+      renderClienteDatalist();
+      if (App.currentPage === 'clientes') Clientes.render();
+      return;
+    }
+
+    // 3. Firestore vazio — envia o seed em batches em background
+    if (typeof SEED_CLIENTES !== 'undefined' && SEED_CLIENTES.length) {
+      console.log('[Hub] Iniciando seed de', SEED_CLIENTES.length, 'clientes no Firestore…');
+      Firebase._seedClientes(SEED_CLIENTES).catch(console.error);
     }
   },
 
