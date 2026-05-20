@@ -27,11 +27,18 @@ svg { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
 .sidebar.collapsed .nav-item { justify-content: center; padding: 12px; }
 .sidebar.collapsed .nav-badge { position: absolute; top: 6px; right: 6px; }
 
-.sidebar-header { padding: 20px 16px 16px; border-bottom: 1px solid #1e293b; }
-.logo { display: flex; align-items: center; gap: 10px; }
+.sidebar-header { padding: 16px 12px; border-bottom: 1px solid #1e293b; }
+.logo { display: flex; align-items: center; justify-content: center; }
 .logo-icon { font-size: 28px; color: #3b82f6; line-height: 1; }
 .logo-name { font-size: 15px; font-weight: 700; color: #f1f5f9; display: block; }
 .logo-sub { font-size: 10px; color: #64748b; display: block; text-transform: uppercase; letter-spacing: .5px; }
+/* Logo Arte na sidebar — fundo escuro: inverte para branco */
+.sidebar-logo-img {
+  width: 148px; height: auto; display: block;
+  filter: brightness(0) invert(1);
+  transition: opacity .2s;
+}
+.sidebar.collapsed .sidebar-logo-img { width: 32px; object-fit: cover; object-position: left; }
 
 .sidebar-nav { flex: 1; padding: 12px 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
 .nav-label { font-size: 10px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: .8px; padding: 10px 8px 4px; white-space: nowrap; }
