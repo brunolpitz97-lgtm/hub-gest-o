@@ -1129,7 +1129,7 @@ const Clientes = {
         <td>${c.telefone || '—'}</td>
         <td>${c.email || '—'}</td>
         <td>${c.cidade || '—'}${c.uf ? '/' + c.uf : ''}</td>
-        <td>${c.segmento || '—'}</td>
+        <td>${c.vendedor || c.segmento || '—'}</td>
         <td>
           <button class="btn btn-sm btn-secondary" onclick="Clientes.openModal('${c.id}')">Editar</button>
           <button class="btn btn-sm btn-danger" onclick="Clientes.delete('${c.id}')">Excluir</button>
@@ -1146,7 +1146,7 @@ const Clientes = {
     const c = id ? DB.clientes.find(x => x.id === id) : {};
     const titleEl = document.getElementById('cli-modal-title');
     if (titleEl) titleEl.textContent = id ? 'Editar Cliente' : 'Novo Cliente';
-    ['razao','fantasia','cnpj','telefone','email','cidade','uf','segmento','obs'].forEach(f => {
+    ['razao','fantasia','cnpj','telefone','email','cidade','uf','segmento','vendedor','ie','obs'].forEach(f => {
       const el = document.getElementById('cli-f-' + f);
       if (el) el.value = (c && c[f]) || '';
     });
@@ -1166,7 +1166,7 @@ const Clientes = {
     const razao = razaoEl.value.trim();
     if (!razao) { alert('Razão social é obrigatória.'); return; }
 
-    const fields = ['razao','fantasia','cnpj','telefone','email','cidade','uf','segmento','obs'];
+    const fields = ['razao','fantasia','cnpj','telefone','email','cidade','uf','segmento','vendedor','ie','obs'];
     const data = {};
     fields.forEach(f => {
       const el = document.getElementById('cli-f-' + f);
@@ -1409,6 +1409,10 @@ const Firebase = {
       if (DB.orcamentos.length === 0)      await Firebase._seed('orcamentos',      SEED_ORCAMENTOS);
       if (DB.modelos_produto.length === 0) await Firebase._seed('modelos_produto', SEED_MODELOS);
       if (DB.usuarios.length === 0)        await Firebase._seed('usuarios',        SEED_USUARIOS);
+      // Semeia base de clientes (4434 registros) na primeira carga
+      if (DB.clientes.length === 0 && typeof SEED_CLIENTES !== 'undefined' && SEED_CLIENTES.length) {
+        await Firebase._seedClientes(SEED_CLIENTES);
+      }
     } catch(e) {
       console.error('Erro ao carregar Firestore:', e);
       // Fallback para seed em caso de erro de permissão
@@ -1425,6 +1429,24 @@ const Firebase = {
     await batch.commit();
     const snap = await db.collection(col).get();
     DB[col] = snap.docs.map(d => ({ _fid: d.id, ...d.data() }));
+  },
+
+  // Semeia base de clientes em batches de 499 (limite Firestore = 500)
+  async _seedClientes(data) {
+    const db = firebase.firestore();
+    const BATCH_SIZE = 499;
+    for (let i = 0; i < data.length; i += BATCH_SIZE) {
+      const chunk = data.slice(i, i + BATCH_SIZE);
+      const batch = db.batch();
+      chunk.forEach(item => { const r = db.collection('clientes').doc(); batch.set(r, item); });
+      await batch.commit();
+    }
+    // Recarrega do Firestore para obter os _fid
+    const snap = await Firebase._withTimeout(db.collection('clientes').orderBy('razao').get(), 15000);
+    DB.clientes = snap.docs.map(d => ({ _fid: d.id, ...d.data() }));
+    renderClienteDatalist();
+    if (App.currentPage === 'clientes') Clientes.render();
+    console.log('[Hub] Base de clientes semeada:', DB.clientes.length, 'registros');
   },
 
   // ── CRUD ──────────────────────────────────────────────────────────

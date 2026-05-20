@@ -749,7 +749,7 @@
                   <th>Telefone</th>
                   <th>E-mail</th>
                   <th>Cidade/UF</th>
-                  <th>Segmento</th>
+                  <th>Vendedor</th>
                   <th style="width:120px">Ações</th>
                 </tr>
               </thead>
@@ -797,19 +797,23 @@
                   <label>UF</label>
                   <input type="text" id="cli-f-uf" placeholder="SC" maxlength="2" style="text-transform:uppercase">
                 </div>
-                <div class="form-group" style="grid-column:1/-1">
+                <div class="form-group">
                   <label>Segmento</label>
-                  <input type="text" id="cli-f-segmento" list="hub-segmentos-dl" placeholder="Ex: Têxtil, Gráfica, Alimentício...">
+                  <input type="text" id="cli-f-segmento" list="hub-segmentos-dl" placeholder="Ex: Têxtil, Gráfica...">
                   <datalist id="hub-segmentos-dl">
-                    <option value="Têxtil"></option>
-                    <option value="Gráfica"></option>
-                    <option value="Alimentício"></option>
-                    <option value="Farmacêutico"></option>
-                    <option value="Cosméticos"></option>
-                    <option value="Logística"></option>
-                    <option value="Varejo"></option>
-                    <option value="Indústria"></option>
+                    <option value="Têxtil"></option><option value="Gráfica"></option>
+                    <option value="Alimentício"></option><option value="Farmacêutico"></option>
+                    <option value="Cosméticos"></option><option value="Logística"></option>
+                    <option value="Varejo"></option><option value="Indústria"></option>
                   </datalist>
+                </div>
+                <div class="form-group">
+                  <label>Vendedor Principal</label>
+                  <input type="text" id="cli-f-vendedor" placeholder="Nome do vendedor responsável">
+                </div>
+                <div class="form-group">
+                  <label>Inscrição Estadual</label>
+                  <input type="text" id="cli-f-ie" placeholder="ISENTO ou número da IE">
                 </div>
                 <div class="form-group" style="grid-column:1/-1">
                   <label>Observações</label>
@@ -1346,6 +1350,7 @@
   <!-- Datalist global de clientes — alimentado por renderClienteDatalist() -->
   <datalist id="hub-clientes-dl"></datalist>
 
+  <script src="clientes-seed.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
