@@ -146,6 +146,41 @@ const App = {
 
     const renders = { bi: () => BI.render(), faturamento: () => Faturamento.render(), pcp: () => PCP.render(), maquinas: () => Maquinas.render(), orcamentos: () => Orcamentos.render(), admin: () => AdminPage.render(), clientes: () => Clientes.render() };
     if (renders[page]) renders[page]();
+
+    // Injeta clientes no iframe do Ribbons ao navegar para ele
+    if (page === 'ribbons') App._injectClientesIntoRibbons();
+  },
+
+  // Injeta DB.clientes no iframe ribbons (chamado na navegação e após _loadClientes)
+  _injectClientesIntoRibbons() {
+    const iframe = document.getElementById('ribbons-iframe');
+    if (!iframe) return;
+    const doInject = () => {
+      try {
+        const win = iframe.contentWindow;
+        if (!win || !win.DB) return;
+        if (!DB.clientes || !DB.clientes.length) return;
+        win.DB.clientes = DB.clientes.map(c => ({
+          id:     c.id,
+          nome:   c.fantasia || c.razao,
+          cnpj:   c.cnpj    || '',
+          fone:   c.telefone || '',
+          email:  c.email   || '',
+          end:    '',
+          cidade: c.cidade  || '',
+          uf:     c.uf      || '',
+        }));
+        if (typeof win.renderClientes === 'function') win.renderClientes();
+        if (typeof win.popularSelectClientes === 'function') win.popularSelectClientes();
+        console.log('[Hub] Clientes injetados no Ribbons:', win.DB.clientes.length);
+      } catch(e) { console.warn('[Hub] Inject ribbons:', e.message); }
+    };
+    // Tenta agora; se iframe ainda não carregou, aguarda o onload
+    if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
+      doInject();
+    } else {
+      iframe.addEventListener('load', doInject, { once: true });
+    }
   },
 
   changePeriod(v) {
@@ -1427,6 +1462,7 @@ const Firebase = {
       DB.clientes = SEED_CLIENTES.map(c => ({ ...c }));
       renderClienteDatalist();
       if (App.currentPage === 'clientes') Clientes.render();
+      App._injectClientesIntoRibbons(); // atualiza iframe se estiver aberto
     }
 
     // 2. Tenta carregar do Firestore (coleção pode estar vazia na primeira vez)
@@ -1436,6 +1472,7 @@ const Firebase = {
       DB.clientes = snap.docs.map(d => ({ _fid: d.id, ...d.data() }));
       renderClienteDatalist();
       if (App.currentPage === 'clientes') Clientes.render();
+      App._injectClientesIntoRibbons(); // atualiza iframe se estiver aberto
       return;
     }
 
@@ -1470,6 +1507,7 @@ const Firebase = {
     DB.clientes = snap.docs.map(d => ({ _fid: d.id, ...d.data() }));
     renderClienteDatalist();
     if (App.currentPage === 'clientes') Clientes.render();
+    App._injectClientesIntoRibbons();
     console.log('[Hub] Base de clientes semeada:', DB.clientes.length, 'registros');
   },
 

@@ -2276,12 +2276,13 @@ document.addEventListener('keydown', e=>{
 
 // ═══════════════════════════════════
 // SINCRONIZA CLIENTES COM O HUB PAI
-// Substitui a lista de clientes do RibbonPrice pela base central do Hub
+// Chamado pelo Hub (App._injectClientesIntoRibbons) com a lista já convertida,
+// ou tenta buscar do parent como fallback quando aberto isoladamente.
 // ═══════════════════════════════════
 (function syncClientesFromHub() {
   try {
-    const hubClientes = window.parent && window.parent.DB && window.parent.DB.clientes;
-    if (!hubClientes || !hubClientes.length) return;
+    const hubClientes = window.parent && window.parent !== window && window.parent.DB && window.parent.DB.clientes;
+    if (!hubClientes || !hubClientes.length) return; // Hub vai injetar via _injectClientesIntoRibbons
 
     // Converte formato Hub → formato RibbonPrice
     DB.clientes = hubClientes.map(c => ({
@@ -2295,11 +2296,9 @@ document.addEventListener('keydown', e=>{
       uf:     c.uf      || '',
     }));
 
-    // Atualiza nextId para não colidir com IDs do Hub
     if (!DB.nextId) DB.nextId = {};
     DB.nextId.cliente = hubClientes.length + 1;
 
-    // Re-render se a página de clientes estiver visível
     const pg = document.querySelector('.page.active');
     if (pg && pg.id === 'page-clientes') renderClientes();
 
