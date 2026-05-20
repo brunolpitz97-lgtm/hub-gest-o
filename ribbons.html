@@ -57,11 +57,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .login-error{background:var(--red-dim);border:1px solid rgba(220,38,38,0.3);border-radius:var(--radius);padding:10px 14px;color:var(--red);font-size:13px;margin-bottom:1rem;display:none}
 /* APP */
 #app{display:none;min-height:100vh}
-.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;box-shadow:var(--shadow)}
-.sidebar-logo{padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--border)}
-.sidebar-logo .brand{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--accent)}
-.sidebar-logo .brand span{color:var(--text3)}
-.sidebar-logo p{font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:#0f172a;border-right:none;display:flex;flex-direction:column;z-index:100;box-shadow:var(--shadow)}
+.sidebar-logo{padding:1rem 1rem 0.875rem;border-bottom:1px solid #1e293b;display:flex;align-items:center;justify-content:center}
+.sidebar-logo img{width:140px;height:auto;filter:brightness(0) invert(1)}
+.sidebar-logo .brand{font-family:var(--mono);font-size:16px;font-weight:500;color:#f1f5f9}
+.sidebar-logo .brand span{color:#475569}
+.sidebar-logo p{font-size:10px;color:#475569;letter-spacing:0.08em;text-transform:uppercase;margin-top:2px}
+/* Nav items sobre fundo escuro */
+.nav-section-label{color:#475569!important}
+.nav-item{color:#94a3b8!important}
+.nav-item:hover{background:#1e293b!important;color:#e2e8f0!important}
+.nav-item.active{background:#1d4ed8!important;color:#fff!important}
+.sidebar-bottom{border-top:1px solid #1e293b!important}
+.user-name{color:#e2e8f0!important}
+.user-role{color:#64748b!important}
+.user-avatar{background:#1d4ed8!important}
+.btn-logout{border-color:#1e293b!important;color:#94a3b8!important}
+.btn-logout:hover{border-color:#ef4444!important;color:#ef4444!important}
 .nav-section{padding:1rem 0.75rem 0.5rem}
 .nav-section-label{font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;padding:0 0.5rem;margin-bottom:4px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:13px;font-weight:400;transition:all 0.15s;user-select:none;position:relative}
@@ -322,8 +334,7 @@ tbody td.muted{color:var(--text2)}
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <div class="brand">Ribbon<span>Price</span></div>
-      <p>Sistema Comercial</p>
+      <img src="logo-arte.png" alt="Arte Soluções Gráficas">
     </div>
     <div class="nav-section">
       <div class="nav-section-label">Menu</div>
@@ -738,8 +749,12 @@ tbody td.muted{color:var(--text2)}
       <div class="field" style="grid-column:1/-1">
         <label>Cliente</label>
         <div style="display:flex;gap:8px">
-          <select id="prop-cliente" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none"></select>
-          <button class="btn btn-sm" onclick="abrirModalCliente(null)">+ Novo</button>
+          <input type="text" id="prop-cliente-input" list="ribbon-clientes-dl"
+            placeholder="Digite para buscar cliente..."
+            style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none">
+          <datalist id="ribbon-clientes-dl"></datalist>
+          <!-- select oculto mantido para compatibilidade com gerarPDF() -->
+          <select id="prop-cliente" style="display:none"></select>
         </div>
       </div>
       <div class="field"><label>Forma de pagamento</label><input type="text" id="prop-pagamento" value="À Combinar" /></div>
@@ -1973,10 +1988,28 @@ function renderCarrinho() {
 let editingClienteId = null;
 
 function popularSelectClientes() {
-  const sel = document.getElementById('prop-cliente');
-  if(!sel) return;
   if(!DB.clientes) DB.clientes = [];
-  sel.innerHTML = DB.clientes.map(c=>'<option value="'+c.id+'">'+c.nome+'</option>').join('');
+
+  // Popula datalist para o input com busca
+  const dl = document.getElementById('ribbon-clientes-dl');
+  if(dl) dl.innerHTML = DB.clientes.map(c=>'<option value="'+c.nome+'">'+(c.cnpj?c.cnpj+' — ':'')+c.cidade+'</option>').join('');
+
+  // Popula select oculto (usado por gerarPDF para buscar por id)
+  const sel = document.getElementById('prop-cliente');
+  if(sel) sel.innerHTML = DB.clientes.map(c=>'<option value="'+c.id+'">'+c.nome+'</option>').join('');
+
+  // Sincroniza o input com o select ao digitar
+  const inp = document.getElementById('prop-cliente-input');
+  if(inp && !inp._bound) {
+    inp._bound = true;
+    inp.addEventListener('input', function() {
+      const nome = this.value.trim().toLowerCase();
+      const match = DB.clientes.find(c => c.nome.toLowerCase() === nome);
+      if(match && sel) {
+        sel.value = match.id;
+      }
+    });
+  }
 }
 
 function abrirModalCliente(id) {
@@ -2038,8 +2071,10 @@ function abrirModalProposta() {
 }
 
 function gerarPDF() {
-  const clienteId = parseInt(document.getElementById('prop-cliente').value);
-  const cliente = DB.clientes.find(c=>c.id===clienteId);
+  // ID pode ser string (Hub: 'CLI-XXXXX') ou número (clientes locais legados)
+  const rawId = document.getElementById('prop-cliente').value;
+  const clienteId = isNaN(rawId) ? rawId : parseInt(rawId);
+  const cliente = DB.clientes.find(c => String(c.id) === String(clienteId));
   if(!cliente) { showToast('Selecione um cliente.', 'error'); return; }
 
   const pagamento  = document.getElementById('prop-pagamento').value;
@@ -2237,6 +2272,41 @@ document.addEventListener('keydown', e=>{
   if(loginScreen) loginScreen.style.display = 'none';
   if(appEl) appEl.style.display = 'block';
   if(currentUser) initApp();
+})();
+
+// ═══════════════════════════════════
+// SINCRONIZA CLIENTES COM O HUB PAI
+// Substitui a lista de clientes do RibbonPrice pela base central do Hub
+// ═══════════════════════════════════
+(function syncClientesFromHub() {
+  try {
+    const hubClientes = window.parent && window.parent.DB && window.parent.DB.clientes;
+    if (!hubClientes || !hubClientes.length) return;
+
+    // Converte formato Hub → formato RibbonPrice
+    DB.clientes = hubClientes.map(c => ({
+      id:     c.id,
+      nome:   c.fantasia || c.razao,
+      cnpj:   c.cnpj    || '',
+      fone:   c.telefone || '',
+      email:  c.email   || '',
+      end:    '',
+      cidade: c.cidade  || '',
+      uf:     c.uf      || '',
+    }));
+
+    // Atualiza nextId para não colidir com IDs do Hub
+    if (!DB.nextId) DB.nextId = {};
+    DB.nextId.cliente = hubClientes.length + 1;
+
+    // Re-render se a página de clientes estiver visível
+    const pg = document.querySelector('.page.active');
+    if (pg && pg.id === 'page-clientes') renderClientes();
+
+  } catch(e) {
+    // Sem acesso ao pai (ex: aberto direto) — usa clientes locais
+    console.warn('[RibbonPrice] Hub pai não acessível:', e.message);
+  }
 })();
 
 </script>
