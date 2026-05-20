@@ -15,7 +15,21 @@ const DB = {
   usuarios: [],
   modelos_produto: [],
   orcamentos: [],
+  clientes: [],
 };
+
+// ===== CLIENTES — fonte única de dados =====
+function renderClienteDatalist() {
+  let dl = document.getElementById('hub-clientes-dl');
+  if (!dl) {
+    dl = document.createElement('datalist');
+    dl.id = 'hub-clientes-dl';
+    document.body.appendChild(dl);
+  }
+  dl.innerHTML = DB.clientes
+    .map(c => `<option value="${(c.fantasia || c.razao).replace(/"/g,'&quot;')}"></option>`)
+    .join('');
+}
 
 // ===== UTILITÁRIOS =====
 const fmt = {
@@ -130,7 +144,7 @@ const App = {
     document.getElementById('pageTitle').textContent = title;
     document.getElementById('pageSubtitle').textContent = sub;
 
-    const renders = { bi: () => BI.render(), faturamento: () => Faturamento.render(), pcp: () => PCP.render(), maquinas: () => Maquinas.render(), orcamentos: () => Orcamentos.render(), admin: () => AdminPage.render() };
+    const renders = { bi: () => BI.render(), faturamento: () => Faturamento.render(), pcp: () => PCP.render(), maquinas: () => Maquinas.render(), orcamentos: () => Orcamentos.render(), admin: () => AdminPage.render(), clientes: () => Clientes.render() };
     if (renders[page]) renders[page]();
   },
 
@@ -417,6 +431,7 @@ const Faturamento = {
     const nota = {
       id: document.getElementById('fat-nf-num').value || `NF-${String(DB.notas.length + 1).padStart(6,'0')}`,
       cliente: document.getElementById('fat-nf-cliente').value || 'Cliente não informado',
+      cliente_id: Clientes.resolveId(document.getElementById('fat-nf-cliente').value) || null,
       data: document.getElementById('fat-nf-data').value,
       canal: document.getElementById('fat-nf-canal').value,
       vendedor: document.getElementById('fat-nf-vendedor').value,
@@ -511,6 +526,7 @@ const PCP = {
     const o = {
       op: document.getElementById('pcp-op-num').value || ordemNum,
       cliente: document.getElementById('pcp-op-cliente').value || 'Cliente',
+      cliente_id: Clientes.resolveId(document.getElementById('pcp-op-cliente').value) || null,
       produto: document.getElementById('pcp-op-produto').value || 'Produto',
       qtd: parseInt(document.getElementById('pcp-op-qtd').value) || 0,
       entrada: document.getElementById('pcp-op-entrada').value,
@@ -925,6 +941,7 @@ const Orcamentos = {
       DB.orcamentos.unshift({
         id:          document.getElementById('orc-num').value || `ORC-2026-0${String(DB.orcamentos.length + 90).padStart(3,'0')}`,
         cliente:     document.getElementById('orc-cliente').value    || 'Cliente',
+        cliente_id:  Clientes.resolveId(document.getElementById('orc-cliente').value) || null,
         produto:     document.getElementById('orc-produto').value    || 'Produto',
         qtd, custo_unit: custo, preco_unit: preco,
         criado:      document.getElementById('orc-data').value,
@@ -1032,6 +1049,7 @@ const Orcamentos = {
     const o = {
       id: document.getElementById('orc-num').value || `ORC-2026-0${String(DB.orcamentos.length + 90).padStart(3,'0')}`,
       cliente: document.getElementById('orc-cliente').value || 'Cliente',
+      cliente_id: Clientes.resolveId(document.getElementById('orc-cliente').value) || null,
       produto: document.getElementById('orc-produto').value || 'Produto',
       qtd, custo_unit: custo, preco_unit: preco,
       criado: document.getElementById('orc-data').value,
@@ -1084,6 +1102,143 @@ const CAMPOS_COMERCIAIS = [
 ];
 
 // ===== FIREBASE =====
+// ===== MÓDULO CLIENTES =====
+const Clientes = {
+  _editId: null,
+
+  render() {
+    const q = (document.getElementById('cli-search')?.value || '').toLowerCase();
+    const list = DB.clientes.filter(c =>
+      !q ||
+      c.razao.toLowerCase().includes(q) ||
+      (c.fantasia || '').toLowerCase().includes(q) ||
+      (c.cnpj || '').includes(q) ||
+      (c.cidade || '').toLowerCase().includes(q)
+    );
+
+    const el = document.getElementById('cli-tbody');
+    if (!el) return;
+
+    el.innerHTML = list.length ? list.map(c => `
+      <tr>
+        <td>
+          <div style="font-weight:500;color:#1e293b">${c.fantasia || c.razao}</div>
+          ${c.fantasia ? `<div style="font-size:11px;color:#64748b">${c.razao}</div>` : ''}
+        </td>
+        <td class="mono">${c.cnpj || '—'}</td>
+        <td>${c.telefone || '—'}</td>
+        <td>${c.email || '—'}</td>
+        <td>${c.cidade || '—'}${c.uf ? '/' + c.uf : ''}</td>
+        <td>${c.segmento || '—'}</td>
+        <td>
+          <button class="btn btn-sm btn-secondary" onclick="Clientes.openModal('${c.id}')">Editar</button>
+          <button class="btn btn-sm btn-danger" onclick="Clientes.delete('${c.id}')">Excluir</button>
+        </td>
+      </tr>
+    `).join('') : `<tr><td colspan="7" style="text-align:center;padding:32px;color:#94a3b8">Nenhum cliente cadastrado. Clique em <strong>+ Novo Cliente</strong> para começar.</td></tr>`;
+
+    const cnt = document.getElementById('cli-count');
+    if (cnt) cnt.textContent = list.length;
+  },
+
+  openModal(id = null) {
+    Clientes._editId = id;
+    const c = id ? DB.clientes.find(x => x.id === id) : {};
+    const titleEl = document.getElementById('cli-modal-title');
+    if (titleEl) titleEl.textContent = id ? 'Editar Cliente' : 'Novo Cliente';
+    ['razao','fantasia','cnpj','telefone','email','cidade','uf','segmento','obs'].forEach(f => {
+      const el = document.getElementById('cli-f-' + f);
+      if (el) el.value = (c && c[f]) || '';
+    });
+    const modal = document.getElementById('cli-modal');
+    if (modal) modal.classList.add('open');
+  },
+
+  closeModal() {
+    const modal = document.getElementById('cli-modal');
+    if (modal) modal.classList.remove('open');
+    Clientes._editId = null;
+  },
+
+  save() {
+    const razaoEl = document.getElementById('cli-f-razao');
+    if (!razaoEl) return;
+    const razao = razaoEl.value.trim();
+    if (!razao) { alert('Razão social é obrigatória.'); return; }
+
+    const fields = ['razao','fantasia','cnpj','telefone','email','cidade','uf','segmento','obs'];
+    const data = {};
+    fields.forEach(f => {
+      const el = document.getElementById('cli-f-' + f);
+      data[f] = el ? el.value.trim() : '';
+    });
+
+    if (Clientes._editId) {
+      const idx = DB.clientes.findIndex(c => c.id === Clientes._editId);
+      if (idx !== -1) {
+        const oldDisplayName = DB.clientes[idx].fantasia || DB.clientes[idx].razao;
+        const newDisplayName = data.fantasia || data.razao;
+        DB.clientes[idx] = { ...DB.clientes[idx], ...data };
+        // Propagar alteração de nome em todos os módulos
+        if (oldDisplayName !== newDisplayName) {
+          Clientes._propagateRename(Clientes._editId, oldDisplayName, newDisplayName);
+        }
+      }
+    } else {
+      DB.clientes.push({
+        id: 'CLI-' + Date.now(),
+        ...data,
+        criado_em: new Date().toISOString().split('T')[0],
+      });
+    }
+
+    renderClienteDatalist();
+    Clientes.closeModal();
+    Clientes.render();
+  },
+
+  delete(id) {
+    if (!confirm('Excluir cliente? Os registros históricos manterão o nome atual.')) return;
+    DB.clientes = DB.clientes.filter(c => c.id !== id);
+    renderClienteDatalist();
+    Clientes.render();
+  },
+
+  // Propaga rename para todos os arrays do DB
+  _propagateRename(id, oldName, newName) {
+    const update = (arr) => arr.forEach(item => {
+      if (item.cliente_id === id || item.cliente === oldName) {
+        item.cliente = newName;
+        item.cliente_id = id;
+      }
+    });
+    update(DB.notas);
+    update(DB.ordens);
+    update(DB.orcamentos);
+    // Re-render se a página atual usa clientes
+    const p = App.currentPage;
+    if (p === 'faturamento') Faturamento.render();
+    if (p === 'pcp') PCP.render();
+    if (p === 'orcamentos') Orcamentos.render();
+  },
+
+  // Resolve o nome de exibição de um cliente
+  displayName(nameOrId) {
+    const c = DB.clientes.find(x => x.id === nameOrId || x.razao === nameOrId || x.fantasia === nameOrId);
+    return c ? (c.fantasia || c.razao) : nameOrId;
+  },
+
+  // Ao salvar um registro em outro módulo, tenta vincular pelo nome
+  resolveId(name) {
+    if (!name) return null;
+    const c = DB.clientes.find(x =>
+      x.razao.toLowerCase() === name.toLowerCase() ||
+      (x.fantasia || '').toLowerCase() === name.toLowerCase()
+    );
+    return c ? c.id : null;
+  },
+};
+
 const Firebase = {
   currentUser:     null,
   currentPerms:    {},
@@ -1133,6 +1288,7 @@ const Firebase = {
     document.getElementById('app-shell').style.display     = 'flex';
     document.getElementById('app-shell').classList.add('visible');
     Firebase._updateSidebar();
+    renderClienteDatalist();
     App._start();
   },
 
@@ -1152,6 +1308,7 @@ const Firebase = {
     document.getElementById('app-shell').classList.add('visible');
     Firebase._updateSidebar();
     Auth._updateUI();
+    renderClienteDatalist();
     App._start();
 
     // Carrega dados reais do Firestore em background (não bloqueia a entrada)
@@ -1187,6 +1344,7 @@ const Firebase = {
 
       // Carrega dados das coleções
       await Firebase.loadAll();
+      renderClienteDatalist();
     } catch(e) {
       console.warn('Firestore indisponível — usando dados locais:', e.message);
     }
@@ -1745,7 +1903,7 @@ const QuoteBuilder = {
         </div>
         <div class="form-group full">
           <label>Cliente <span class="obrig">*</span></label>
-          <input type="text" id="qb-cliente" placeholder="Razão social do cliente" value="${QuoteBuilder.data.cliente || ''}">
+          <input type="text" id="qb-cliente" list="hub-clientes-dl" placeholder="Razão social do cliente" value="${QuoteBuilder.data.cliente || ''}">
         </div>
         <div class="form-group">
           <label>Responsável <span class="obrig">*</span></label>
@@ -2196,6 +2354,7 @@ const QuoteBuilder = {
     const newOrc = {
       id:          d.num || `ORC-2026-0${String(DB.orcamentos.length + 90).padStart(3,'0')}`,
       cliente:     d.cliente || 'Cliente',
+      cliente_id:  Clientes.resolveId(d.cliente) || null,
       produto:     titulo,
       qtd:         qtd1,
       preco_unit:  preco,

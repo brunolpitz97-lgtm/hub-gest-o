@@ -722,13 +722,106 @@
         </div>
       </div>
 
-      <!-- PAGE: CLIENTES (placeholder) -->
+      <!-- PAGE: CLIENTES -->
       <div id="page-clientes" class="page">
-        <div class="page-placeholder">
-          <div class="placeholder-icon">👥</div>
-          <h2>Clientes</h2>
-          <p>Este módulo está em desenvolvimento.</p>
-          <button class="btn btn-primary" onclick="App.navigate('submenu-comercial')">← Voltar</button>
+        <div class="page-back-bar">
+          <button class="btn btn-sm btn-secondary" onclick="App.navigate('submenu-crm')">← Voltar</button>
+        </div>
+
+        <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <h2 style="font-size:18px;font-weight:600;color:#1e293b">Clientes</h2>
+            <p style="font-size:13px;color:#64748b">Cadastro central — <span id="cli-count">0</span> cliente(s)</p>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="cli-search" placeholder="Buscar cliente, CNPJ, cidade..." class="search-input" oninput="Clientes.render()">
+            <button class="btn btn-primary" onclick="Clientes.openModal()">+ Novo Cliente</button>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Razão Social / Fantasia</th>
+                  <th>CNPJ</th>
+                  <th>Telefone</th>
+                  <th>E-mail</th>
+                  <th>Cidade/UF</th>
+                  <th>Segmento</th>
+                  <th style="width:120px">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="cli-tbody">
+                <tr><td colspan="7" style="text-align:center;padding:32px;color:#94a3b8">Nenhum cliente cadastrado.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- MODAL CLIENTE -->
+        <div class="modal-overlay" id="cli-modal">
+          <div class="modal-box" style="width:560px;max-width:95vw">
+            <div class="modal-header">
+              <h3 id="cli-modal-title">Novo Cliente</h3>
+              <button class="modal-close" onclick="Clientes.closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+              <div class="form-grid-2">
+                <div class="form-group" style="grid-column:1/-1">
+                  <label>Razão Social *</label>
+                  <input type="text" id="cli-f-razao" placeholder="Nome jurídico completo">
+                </div>
+                <div class="form-group" style="grid-column:1/-1">
+                  <label>Nome Fantasia</label>
+                  <input type="text" id="cli-f-fantasia" placeholder="Como é conhecido comercialmente">
+                </div>
+                <div class="form-group">
+                  <label>CNPJ / CPF</label>
+                  <input type="text" id="cli-f-cnpj" placeholder="00.000.000/0001-00">
+                </div>
+                <div class="form-group">
+                  <label>Telefone</label>
+                  <input type="text" id="cli-f-telefone" placeholder="(47) 9 9999-9999">
+                </div>
+                <div class="form-group" style="grid-column:1/-1">
+                  <label>E-mail</label>
+                  <input type="text" id="cli-f-email" placeholder="contato@empresa.com.br">
+                </div>
+                <div class="form-group">
+                  <label>Cidade</label>
+                  <input type="text" id="cli-f-cidade" placeholder="Blumenau">
+                </div>
+                <div class="form-group">
+                  <label>UF</label>
+                  <input type="text" id="cli-f-uf" placeholder="SC" maxlength="2" style="text-transform:uppercase">
+                </div>
+                <div class="form-group" style="grid-column:1/-1">
+                  <label>Segmento</label>
+                  <input type="text" id="cli-f-segmento" list="hub-segmentos-dl" placeholder="Ex: Têxtil, Gráfica, Alimentício...">
+                  <datalist id="hub-segmentos-dl">
+                    <option value="Têxtil"></option>
+                    <option value="Gráfica"></option>
+                    <option value="Alimentício"></option>
+                    <option value="Farmacêutico"></option>
+                    <option value="Cosméticos"></option>
+                    <option value="Logística"></option>
+                    <option value="Varejo"></option>
+                    <option value="Indústria"></option>
+                  </datalist>
+                </div>
+                <div class="form-group" style="grid-column:1/-1">
+                  <label>Observações</label>
+                  <input type="text" id="cli-f-obs" placeholder="Informações adicionais">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" onclick="Clientes.closeModal()">Cancelar</button>
+              <button class="btn btn-primary" onclick="Clientes.save()">Salvar Cliente</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -941,7 +1034,7 @@
           </div>
           <div class="form-group full">
             <label>Cliente</label>
-            <input type="text" id="fat-nf-cliente" placeholder="Razão Social do cliente">
+            <input type="text" id="fat-nf-cliente" list="hub-clientes-dl" placeholder="Razão Social do cliente">
           </div>
           <div class="form-group">
             <label>Canal de Venda</label>
@@ -999,7 +1092,7 @@
           </div>
           <div class="form-group full">
             <label>Cliente</label>
-            <input type="text" id="pcp-op-cliente" placeholder="Nome do cliente">
+            <input type="text" id="pcp-op-cliente" list="hub-clientes-dl" placeholder="Nome do cliente">
           </div>
           <div class="form-group full">
             <label>Produto / Descrição</label>
@@ -1059,7 +1152,7 @@
           </div>
           <div class="form-group full">
             <label>Cliente</label>
-            <input type="text" id="orc-cliente" placeholder="Razão Social do cliente">
+            <input type="text" id="orc-cliente" list="hub-clientes-dl" placeholder="Razão Social do cliente">
           </div>
           <div class="form-group full">
             <label>Produto / Descrição</label>
@@ -1249,6 +1342,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Datalist global de clientes — alimentado por renderClienteDatalist() -->
+  <datalist id="hub-clientes-dl"></datalist>
 
   <script src="app.js"></script>
 </body>

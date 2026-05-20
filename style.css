@@ -922,3 +922,10 @@ svg { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
   border: none;
   display: block;
 }
+
+/* ── Módulo Clientes ──────────────────────── */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
