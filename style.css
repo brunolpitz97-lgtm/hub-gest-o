@@ -911,7 +911,10 @@ svg { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
   height: 100vh;
   width: 100%;
   overflow: hidden;
-  display: block !important; /* sobrescreve display:flex do .page.active */
+  /* display herdado de .page (none) e .page.active (flex) — não sobrescrever aqui */
+}
+.ribbons-page.active {
+  display: block; /* bloco em vez de flex para o iframe preencher corretamente */
 }
 .ribbons-iframe {
   width: 100%;
